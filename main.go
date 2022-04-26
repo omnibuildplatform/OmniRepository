@@ -1,13 +1,14 @@
 package main
 
 import (
-	"github.com/gookit/color"
-	"github.com/omnibuildplatform/OmniRepository/app"
-	"github.com/omnibuildplatform/OmniRepository/application"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/gookit/color"
+	"github.com/omnibuildplatform/OmniRepository/app"
+	"github.com/omnibuildplatform/OmniRepository/application"
 )
 
 var (
@@ -65,8 +66,8 @@ func handleSignals(c chan os.Signal) {
 		manager.Close()
 	}
 	//sleep and exit
-	time.Sleep(time.Second * 3)
 	color.Info.Println("\nGoodBye...")
+	time.Sleep(time.Second * 3)
 
 	os.Exit(0)
 }

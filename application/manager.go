@@ -1,19 +1,22 @@
 package application
 
 import (
+	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gookit/color"
-	"github.com/gookit/goutil/fsutil"
-	"github.com/omnibuildplatform/OmniRepository/app"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gookit/color"
+	"github.com/gookit/goutil/fsutil"
+	"github.com/omnibuildplatform/OmniRepository/app"
 )
 
 type PackageType string
@@ -72,6 +75,7 @@ func (r *RepositoryManager) Initialize() error {
 	// register upload and file browse route
 	r.routerGroup.POST("/upload", r.Upload)
 	r.routerGroup.StaticFS("/browse", http.Dir(r.dataFolder))
+	r.routerGroup.POST("/loadfrom", r.LoadFrom)
 	return nil
 }
 
@@ -88,9 +92,9 @@ func (r *RepositoryManager) checkToken(request *http.Request) error {
 
 func (r *RepositoryManager) Upload(c *gin.Context) {
 	var (
-		project  string
-		dstFolder  string
-		fileType string
+		project   string
+		dstFolder string
+		fileType  string
 	)
 	if err := r.checkToken(c.Request); err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
@@ -121,6 +125,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		return
 	}
 	if err != nil {
+		c.Data(http.StatusInternalServerError, "text/html", []byte(err.Error()))
 		return
 	}
 	if strings.ToLower(fileType) == string(Image) {
@@ -140,6 +145,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.Data(http.StatusBadRequest, "text/html", []byte(err.Error()))
 		return
 	}
+
 	defer dstFile.Close()
 	//TODO: read & write in chunk?
 	if _, err := io.Copy(dstFile, srcFile); err != nil {
@@ -158,4 +164,83 @@ func (r *RepositoryManager) StartLoop() {
 
 func (r *RepositoryManager) Close() {
 
+}
+
+func (r *RepositoryManager) LoadFrom(c *gin.Context) {
+	var (
+		isoUrl string
+		err    error
+	)
+	if err = r.checkToken(c.Request); err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	isoUrl = c.Request.FormValue("url")
+	if len(isoUrl) == 0 {
+		c.JSON(http.StatusBadRequest, app.ExportData(400, "FormValue", "missing url"))
+		return
+	}
+	checksum := c.Request.FormValue("checksum")
+	if len(checksum) == 0 {
+		c.JSON(http.StatusBadRequest, app.ExportData(400, "FormValue", "missing checksum"))
+		return
+	}
+
+	_, filename := path.Split(isoUrl)
+	targetDir := r.dataFolder
+	if strings.Contains(filename, ".") {
+		extName := strings.Split(filename, ".")[1]
+		targetDir = path.Join(r.dataFolder, extName)
+	} else {
+		targetDir = path.Join(r.dataFolder, "binary")
+	}
+	err = os.MkdirAll(targetDir, os.ModePerm)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, app.ExportData(400, "MkdirAll", err.Error()))
+		return
+	}
+	fullPath := path.Join(targetDir, filename)
+	var targetFile *os.File
+	targetFile, _ = os.Open(fullPath)
+	if targetFile != nil {
+		defer targetFile.Close()
+		targetFilebody, err := ioutil.ReadAll(targetFile)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, app.ExportData(400, "ReadAll", err.Error()))
+			return
+		}
+		fileMd5 := fmt.Sprintf("%X", md5.Sum(targetFilebody))
+		fmt.Println("\n", strings.ToUpper(checksum), "---", fileMd5)
+		if strings.ToUpper(checksum) == fileMd5 {
+			c.JSON(http.StatusConflict, app.ExportData(http.StatusConflict, "file exist", fileMd5))
+			return
+		}
+	}
+
+	//---------start download  file-----------
+	var response *http.Response
+	response, err = http.Get(isoUrl)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, app.ExportData(400, "Get", err.Error()))
+		return
+	}
+	defer response.Body.Close()
+
+	responseBody, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, app.ExportData(400, "responseBody ReadAll", err.Error()))
+		return
+	}
+	fileMd5 := fmt.Sprintf("%X", md5.Sum(responseBody))
+	if strings.ToUpper(checksum) != fileMd5 {
+		c.JSON(http.StatusConflict, app.ExportData(http.StatusConflict, "file's md5 not equeal checkSum ", fileMd5))
+		return
+	}
+
+	err = ioutil.WriteFile(fullPath, responseBody, os.ModePerm)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, app.ExportData(400, "Copy", err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, app.ExportData(400, "ok", filename))
 }
