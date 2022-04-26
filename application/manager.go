@@ -208,16 +208,16 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 	targetFile, _ = os.Open(fullPath)
 	if targetFile != nil {
 		defer targetFile.Close()
-		targetFilebody, err := ioutil.ReadAll(targetFile)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, app.ExportData(400, "ReadAll", err.Error()))
-			return
-		}
-		fileMd5 := fmt.Sprintf("%X", md5.Sum(targetFilebody))
-		if checksum == fileMd5 {
-			c.JSON(http.StatusConflict, app.ExportData(http.StatusConflict, "file exist", filename))
-			return
-		}
+		// targetFilebody, err := ioutil.ReadAll(targetFile)
+		// if err != nil {
+		// 	c.JSON(http.StatusBadRequest, app.ExportData(400, "ReadAll", err.Error()))
+		// 	return
+		// }
+		// fileMd5 := fmt.Sprintf("%X", md5.Sum(targetFilebody))
+		// if checksum == fileMd5 {
+		c.JSON(http.StatusConflict, app.ExportData(http.StatusConflict, "file exist", filename))
+		return
+		// }
 	}
 
 	//---------start download  file-----------
