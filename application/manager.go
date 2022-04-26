@@ -180,26 +180,30 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(400, "FormValue", "missing url"))
 		return
 	}
-	checksum := c.Request.FormValue("checksum")
+	checksum := strings.ToUpper(c.Request.FormValue("checksum"))
 	if len(checksum) == 0 {
 		c.JSON(http.StatusBadRequest, app.ExportData(400, "FormValue", "missing checksum"))
 		return
 	}
 
+	var fullPath, extName string
 	_, filename := path.Split(isoUrl)
 	targetDir := r.dataFolder
 	if strings.Contains(filename, ".") {
-		extName := strings.Split(filename, ".")[1]
+		extName = strings.Split(filename, ".")[1]
 		targetDir = path.Join(r.dataFolder, extName)
+		filename = checksum + "." + extName
 	} else {
 		targetDir = path.Join(r.dataFolder, "binary")
+		filename = checksum
 	}
+	fullPath = path.Join(targetDir, filename)
 	err = os.MkdirAll(targetDir, os.ModePerm)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, app.ExportData(400, "MkdirAll", err.Error()))
 		return
 	}
-	fullPath := path.Join(targetDir, filename)
+
 	var targetFile *os.File
 	targetFile, _ = os.Open(fullPath)
 	if targetFile != nil {
@@ -210,9 +214,8 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 			return
 		}
 		fileMd5 := fmt.Sprintf("%X", md5.Sum(targetFilebody))
-		fmt.Println("\n", strings.ToUpper(checksum), "---", fileMd5)
-		if strings.ToUpper(checksum) == fileMd5 {
-			c.JSON(http.StatusConflict, app.ExportData(http.StatusConflict, "file exist", fileMd5))
+		if checksum == fileMd5 {
+			c.JSON(http.StatusConflict, app.ExportData(http.StatusConflict, "file exist", filename))
 			return
 		}
 	}
@@ -232,8 +235,8 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		return
 	}
 	fileMd5 := fmt.Sprintf("%X", md5.Sum(responseBody))
-	if strings.ToUpper(checksum) != fileMd5 {
-		c.JSON(http.StatusConflict, app.ExportData(http.StatusConflict, "file's md5 not equeal checkSum ", fileMd5))
+	if checksum != fileMd5 {
+		c.JSON(http.StatusConflict, app.ExportData(http.StatusConflict, "file's md5 not equal checkSum ", fileMd5))
 		return
 	}
 
