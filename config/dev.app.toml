@@ -1,6 +1,6 @@
 name = "OmniRepository"
-httpPort = 8080
-serverName = "localhost:8080"
+httpPort = 8500
+serverName = "localhost:8500"
 [log]
 logFile = "./logs/info-{date}.log"
 errFile = "./logs/error-{date}.log"
@@ -8,3 +8,10 @@ errFile = "./logs/error-{date}.log"
 [manager]
 dataFolder = "./data"
 uploadToken = "316462d0c029ba707ad1"
+
+[database]
+dbHost = "192.168.1.193"
+dbUser = "root"
+dbPswd = "rootpswd"
+dbName = "omni_repository"
+dbPort = "3306"

@@ -9,3 +9,10 @@ errFile = "/app/logs/run-error-{date}.log"
 [manager]
 dataFolder = "/app/data/"
 uploadToken = "316462d0c029ba707ad1"
+
+[database]
+dbHost = "192.168.1.193"
+dbUser = "root"
+dbPswd = "rootpswd"
+dbName = "omni_repository"
+dbPort = "3306"
