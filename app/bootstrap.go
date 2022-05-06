@@ -2,6 +2,11 @@ package app
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/color"
 	"github.com/gookit/config/v2"
@@ -9,16 +14,19 @@ import (
 	"github.com/gookit/config/v2/toml"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/jsonutil"
-	"os"
-	"path/filepath"
-	"strconv"
 )
 
 var (
 	Config *config.Config
+	CnTime *time.Location
 )
 
 func Bootstrap(configDir string) {
+	var err error
+	CnTime, err = time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		CnTime = time.FixedZone("CST", 8*3600)
+	}
 	//Load config
 	loadConfig(configDir)
 	//Initialize environment

@@ -16,6 +16,7 @@ var (
 )
 
 func init() {
+
 	app.Bootstrap("./config")
 	application.InitServer()
 }
