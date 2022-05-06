@@ -13,7 +13,7 @@ func Test_Database(t *testing.T) {
 	item.Checksum = "md5234232"
 	item.CreateTime = time.Now().In(CnTime)
 	item.Desc = " just so so"
-	item.FileType = "iso"
+	item.Jobtype = "iso"
 	item.Name = "my iso file"
 	item.UserId = 112
 	item.UserName = "roland"
