@@ -50,77 +50,77 @@ func InitDB() (err error) {
 	return nil
 }
 
-type UserImages struct {
-	//name, jobtype，url, description, sha256sum, externalID, author
-	ID         int    ` description:"id" gorm:"primaryKey"`
-	Name       string ` description:"name"  form:"name"`
-	Desc       string ` description:"desc"   form:"description"`
-	UserName   string ` description:"user_name" form:"author"`
-	Checksum   string ` description:"checksum" form:"sha256sum"`
-	Jobtype    string ` description:"file_type" form:"jobtype"`
-	ExternalID string ` description:"externalID" form:"externalID"`
-	FromURL    string ` description:"from_url" json:"from_url" form:"from_url"`
-	ExtName    string ` description:"file extenal name" json:"ext_name" `
+type Images struct {
+	//name, type，url, description, sha256sum, externalID, author
+	ID         int    `description:"id" gorm:"primaryKey"`
+	Name       string `description:"name"  form:"name"`
+	Desc       string `description:"desc"   form:"description"`
+	UserName   string `description:"username" form:"username"`
+	Checksum   string `description:"checksum" form:"checksum"`
+	Type       string `description:"type" form:"type"`
+	ExternalID string `description:"externalID" form:"externalID"`
+	SourceUrl  string `description:"source url of images" json:"source_url" form:"source_url"`
+	ExtName    string `description:"file extension name" json:"ext_name"`
 
 	UserId     int       ` description:"user id" `
 	CreateTime time.Time ` description:"create time"`
 }
 
-func (t *UserImages) TableName() string {
-	return "user_images"
+func (t *Images) TableName() string {
+	return "images"
 }
 
-// AddUserImages insert a new ImageMeta into database and returns
-// last inserted Id on success.
-func AddUserImages(m *UserImages) (err error) {
+// AddImages insert a new ImageMeta into database and returns
+// last inserted ID on success.
+func AddImages(m *Images) (err error) {
 	o := GetDB()
 	m.CreateTime = time.Now().In(CnTime)
 	result := o.Create(m)
 	return result.Error
 }
-func UpdateUserImages(m *UserImages) (err error) {
+func UpdateImages(m *Images) (err error) {
 	o := GetDB()
 	result := o.Updates(m)
 	return result.Error
 }
 
-func GetUserImagesByID(id int) (v *UserImages, err error) {
+func GetImagesByID(id int) (v *Images, err error) {
 	o := GetDB()
-	v = new(UserImages)
+	v = new(Images)
 	v.ID = id
 	tx := o.Model(v)
 	return v, tx.Error
 }
 
-func GetUserImagesByUserID(userid, offset, limit int) (result []*UserImages, err error) {
+func GetImagesByUserID(userid, offset, limit int) (result []*Images, err error) {
 	o := GetDB()
-	v := new(UserImages)
+	v := new(Images)
 	sql := fmt.Sprintf("select * from %s where user_id = %d order by create_time desc limit %d,%d", v.TableName(), userid, offset, limit)
 	tx := o.Raw(sql).Scan(&result)
 	return result, tx.Error
 }
-func GetUserImagesByExternalID(externalID string) (result *UserImages, err error) {
+func GetImagesByExternalID(externalID string) (result *Images, err error) {
 	o := GetDB()
-	v := new(UserImages)
+	v := new(Images)
 	sql := fmt.Sprintf("select * from %s where external_id = '%s'  limit 1", v.TableName(), externalID)
 	tx := o.Raw(sql).Scan(&result)
 	return result, tx.Error
 }
 
-// DeleteUserImagesById
-func DeleteUserImagesById(id int) (err error) {
+// DeleteImagesById
+func DeleteImagesById(id int) (err error) {
 	o := GetDB()
-	m := new(UserImages)
+	m := new(Images)
 	m.ID = id
 	result := o.Delete(m)
 	return result.Error
 }
 
-// DeleteMultiUserImagess
-func DeleteMultiUserImagess(names string) (err error) {
+// DeleteMultiImagess
+func DeleteMultiImages(names string) (err error) {
 	o := GetDB()
-	m := new(UserImages)
-	sql := fmt.Sprintf("delete from %s  where job_name in (%s)", m.TableName(), names)
+	m := new(Images)
+	sql := fmt.Sprintf("delete from %s where name in (%s)", m.TableName(), names)
 	result := o.Model(m).Exec(sql)
 	return result.Error
 }
