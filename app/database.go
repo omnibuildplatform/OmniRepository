@@ -51,13 +51,18 @@ func InitDB() (err error) {
 }
 
 type UserImages struct {
-	ID         int       ` description:"id" gorm:"primaryKey"`
-	Name       string    ` description:"name"`
-	Desc       string    ` description:"desc"`
-	UserName   string    ` description:"user_name"`
-	Checksum   string    ` description:"checksum"`
-	FileType   string    ` description:"file_type"`
-	UserId     int       ` description:"user id"`
+	//name, jobtype，url, description, sha256sum, externalID, author
+	ID         int    ` description:"id" gorm:"primaryKey"`
+	Name       string ` description:"name"  form:"name"`
+	Desc       string ` description:"desc"   form:"description"`
+	UserName   string ` description:"user_name" form:"author"`
+	Checksum   string ` description:"checksum" form:"sha256sum"`
+	Jobtype    string ` description:"file_type" form:"jobtype"`
+	ExternalID string ` description:"externalID" form:"externalID"`
+	FromURL    string ` description:"from_url" json:"from_url" form:"from_url"`
+	ExtName    string ` description:"file extenal name" json:"ext_name" `
+
+	UserId     int       ` description:"user id" `
 	CreateTime time.Time ` description:"create time"`
 }
 
@@ -69,6 +74,7 @@ func (t *UserImages) TableName() string {
 // last inserted Id on success.
 func AddUserImages(m *UserImages) (err error) {
 	o := GetDB()
+	m.CreateTime = time.Now().In(CnTime)
 	result := o.Create(m)
 	return result.Error
 }
@@ -90,6 +96,13 @@ func GetUserImagesByUserID(userid, offset, limit int) (result []*UserImages, err
 	o := GetDB()
 	v := new(UserImages)
 	sql := fmt.Sprintf("select * from %s where user_id = %d order by create_time desc limit %d,%d", v.TableName(), userid, offset, limit)
+	tx := o.Raw(sql).Scan(&result)
+	return result, tx.Error
+}
+func GetUserImagesByExternalID(externalID string) (result *UserImages, err error) {
+	o := GetDB()
+	v := new(UserImages)
+	sql := fmt.Sprintf("select * from %s where external_id = '%s'  limit 1", v.TableName(), externalID)
 	tx := o.Raw(sql).Scan(&result)
 	return result, tx.Error
 }
