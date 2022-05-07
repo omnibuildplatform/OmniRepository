@@ -15,3 +15,8 @@ dbUser = "root"
 dbPswd = "rootpswd"
 dbName = "omni_repository"
 dbPort = "3306"
+[redis]
+address = "192.168.1.193"
+port = "6379"
+password = "58243586"
+dbIndex = 0 

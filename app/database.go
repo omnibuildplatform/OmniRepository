@@ -52,18 +52,19 @@ func InitDB() (err error) {
 
 type Images struct {
 	//name, type，url, description, sha256sum, externalID, author
-	ID         int    `description:"id" gorm:"primaryKey"`
-	Name       string `description:"name"  form:"name"`
-	Desc       string `description:"desc"   form:"description"`
-	UserName   string `description:"username" form:"username"`
-	Checksum   string `description:"checksum" form:"checksum"`
-	Type       string `description:"type" form:"type"`
-	ExternalID string `description:"externalID" form:"externalID"`
-	SourceUrl  string `description:"source url of images" json:"source_url" form:"source_url"`
-	ExtName    string `description:"file extension name" json:"ext_name"`
-
+	ID         int       `description:"id" gorm:"primaryKey"`
+	Name       string    `description:"name"  form:"name"`
+	Desc       string    `description:"desc"   form:"description"`
+	UserName   string    `description:"username" form:"username"`
+	Checksum   string    `description:"checksum" form:"checksum"`
+	Type       string    `description:"type" form:"type"`
+	ExternalID string    `description:"externalID" form:"externalID"`
+	SourceUrl  string    `description:"source url of images" json:"source_url" form:"source_url"`
+	ExtName    string    `description:"file extension name" json:"ext_name"`
+	Status     string    `description:"status:start, downloading,done" json:"status"`
 	UserId     int       ` description:"user id" `
 	CreateTime time.Time ` description:"create time"`
+	UpdateTime time.Time ` description:"update time"`
 }
 
 func (t *Images) TableName() string {
@@ -81,6 +82,11 @@ func AddImages(m *Images) (err error) {
 func UpdateImages(m *Images) (err error) {
 	o := GetDB()
 	result := o.Updates(m)
+	return result.Error
+}
+func UpdateImagesStatus(m *Images) (err error) {
+	o := GetDB()
+	result := o.Model(m).Select("status", "update_time").Updates(m)
 	return result.Error
 }
 
