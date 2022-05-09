@@ -7,8 +7,8 @@ RUN go mod download
 RUN CGO_ENABLED=0 go build -o omni-repository
 
 FROM alpine/git:v2.30.2
-ARG user=app
-ARG group=app
+ARG user=root
+ARG group=root
 ARG home=/app
 RUN addgroup -S ${group} && adduser -S ${user} -G ${group} -h ${home}
 
