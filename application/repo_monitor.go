@@ -73,14 +73,22 @@ func downLoadImages(image *app.Images, fullPath string) {
 
 	var savefile *os.File
 	savefile, err = os.Create(fullPath)
+	if err != nil {
+		fmt.Println(err, "--------------- os.Create(fullPath): ", fullPath)
+		image.Status = ImageStatusFailed
+		return
+	}
 	defer savefile.Close()
 	_, err = io.Copy(savefile, response.Body)
 	if err != nil {
+		fmt.Println(err, "--------------- os.Copy(fullPath): ", fullPath)
+
 		image.Status = ImageStatusFailed
 		return
 	}
 	hash := sha256.New()
 	if _, err := io.Copy(hash, savefile); err != nil {
+		fmt.Println(err, "--------------- os.Copy(): ", fullPath)
 		image.Status = ImageStatusFailed
 		return
 	}
@@ -88,6 +96,7 @@ func downLoadImages(image *app.Images, fullPath string) {
 	if image.Checksum != checksumValue {
 		err = fmt.Errorf("file's md5 not equal checkSum ")
 		os.Remove(fullPath)
+		fmt.Println(image.Checksum, "---------------Checksum: ", checksumValue)
 		image.Status = ImageStatusFailed
 		return
 	}
