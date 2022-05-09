@@ -66,6 +66,7 @@ func downLoadImages(image *app.Images, fullPath string) {
 	request.Header.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36")
 	response, err = http.DefaultClient.Do(request)
 	if err != nil {
+		app.Logger.Error(err.Error() + "---------------DefaultClient: " + image.SourceUrl)
 		image.Status = ImageStatusFailed
 		return
 	}
@@ -74,21 +75,21 @@ func downLoadImages(image *app.Images, fullPath string) {
 	var savefile *os.File
 	savefile, err = os.Create(fullPath)
 	if err != nil {
-		fmt.Println(err, "--------------- os.Create(fullPath): ", fullPath)
+		app.Logger.Error(err.Error() + "--------------- os.Create(fullPath): " + fullPath)
 		image.Status = ImageStatusFailed
 		return
 	}
 	defer savefile.Close()
 	_, err = io.Copy(savefile, response.Body)
 	if err != nil {
-		fmt.Println(err, "--------------- os.Copy(fullPath): ", fullPath)
+		app.Logger.Error(err.Error() + "--------------- os.Copy(fullPath): " + fullPath)
 
 		image.Status = ImageStatusFailed
 		return
 	}
 	hash := sha256.New()
 	if _, err := io.Copy(hash, savefile); err != nil {
-		fmt.Println(err, "--------------- os.Copy(): ", fullPath)
+		app.Logger.Error(err.Error() + "-------------- os.Copy(): " + fullPath)
 		image.Status = ImageStatusFailed
 		return
 	}
@@ -96,7 +97,7 @@ func downLoadImages(image *app.Images, fullPath string) {
 	if image.Checksum != checksumValue {
 		err = fmt.Errorf("file's md5 not equal checkSum ")
 		os.Remove(fullPath)
-		fmt.Println(image.Checksum, "---------------Checksum: ", checksumValue)
+		app.Logger.Error(image.Checksum + "---------------Checksum: " + checksumValue)
 		image.Status = ImageStatusFailed
 		return
 	}
