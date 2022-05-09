@@ -96,6 +96,9 @@ func (r *RepositoryManager) checkToken(request *http.Request) error {
 	if token == "" {
 		token = request.FormValue("token")
 	}
+	if token == "" {
+		token = request.URL.Query().Get("token")
+	}
 	if token == "" || token != r.uploadToken {
 		return errors.New("token mismatch")
 	}
