@@ -8,7 +8,7 @@ RUN CGO_ENABLED=0 go build -o omni-repository
 
 FROM alpine/git:v2.30.2
 ARG user=root
-ARG group=root
+ARG group=app
 ARG home=/app
 RUN addgroup -S ${group} && adduser -S ${user} -G ${group} -h ${home}
 
