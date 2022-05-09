@@ -47,11 +47,18 @@ func InitDB() (err error) {
 	sqlDB.SetMaxOpenConns(100)
 	// SetConnMaxLifetime
 	sqlDB.SetConnMaxLifetime(time.Hour)
-	return nil
+
+	err = CreateTables(db)
+	return err
+}
+func CreateTables(db *gorm.DB) (err error) {
+	if !db.Migrator().HasTable(&Images{}) {
+		err = db.Migrator().CreateTable(&Images{})
+	}
+	return err
 }
 
 type Images struct {
-	//name, type，url, description, sha256sum, externalID, author
 	ID         int       `description:"id" gorm:"primaryKey"`
 	Name       string    `description:"name"  form:"name"`
 	Desc       string    `description:"desc"   form:"description"`
@@ -76,7 +83,7 @@ func (t *Images) TableName() string {
 func AddImages(m *Images) (err error) {
 	o := GetDB()
 	m.CreateTime = time.Now().In(CnTime)
-	result := o.Create(m)
+	result := o.Debug().Create(m)
 	return result.Error
 }
 func UpdateImages(m *Images) (err error) {

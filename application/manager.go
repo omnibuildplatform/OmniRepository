@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -120,19 +119,10 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	}
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	defer srcFile.Close()
-	srcFileBody, err := ioutil.ReadAll(srcFile)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "responseBody ReadAll", err.Error()))
-		return
-	}
-	checksumValue := fmt.Sprintf("%X", sha256.Sum256(srcFileBody))
-	if image.Checksum != checksumValue {
-		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "file's sha256sum not equal input checkSum ", checksumValue))
-		return
-	}
 
 	if strings.Contains(fileinfo.Filename, ".") {
-		extName = strings.Split(fileinfo.Filename, ".")[1]
+		splitList := strings.Split(filename, ".")
+		extName = splitList[len(splitList)-1]
 		if strings.Contains(extName, "?") {
 			extName = strings.Split(extName, "?")[0]
 		}
@@ -174,6 +164,18 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "Copy", err.Error()))
 		return
 	}
+
+	hash := sha256.New()
+	if _, err := io.Copy(hash, dstFile); err != nil {
+		image.Status = ImageStatusFailed
+		return
+	}
+	checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
+	if image.Checksum != checksumValue {
+		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "file's sha256sum not equal input checkSum ", checksumValue))
+		return
+	}
+
 	image.ExtName = extName
 	image.Status = ImageStatusDone
 	err = app.AddImages(&image)
@@ -229,22 +231,21 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		return
 	}
 	image.UserId, _ = strconv.Atoi(c.Query("userid"))
-	// if image.UserId < 0 {
-	// 	c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "bad request", "missing userid"))
-	// 	return
-	// }
-
 	image.Checksum = strings.ToUpper(c.Query("checksum"))
 	if len(image.Checksum) == 0 {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "bad request", "missing checksum"))
 		return
 	}
+	image.Name = c.Query("name")
+	image.Desc = c.Query("desc")
+	image.ExternalID = c.Query("externalID")
 
 	var fullPath, extName string
 	_, filename := path.Split(image.SourceUrl)
 	targetDir := r.dataFolder
 	if strings.Contains(filename, ".") {
-		extName = strings.Split(filename, ".")[1]
+		splitList := strings.Split(filename, ".")
+		extName = splitList[len(splitList)-1]
 		if strings.Contains(extName, "?") {
 			extName = strings.Split(extName, "?")[0]
 		}
@@ -272,7 +273,6 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "file exist", filename))
 		return
 	}
-
 	image.CreateTime = time.Now().In(app.CnTime)
 	image.Status = ImageStatusStart
 	err = app.AddImages(&image)
@@ -280,8 +280,8 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "AddImages", err.Error()))
 		return
 	}
-	fmt.Println("---------------id:", image.ID)
 	//---------start download  file-----------
+
 	go downLoadImages(&image, fullPath)
 	c.JSON(http.StatusCreated, app.ExportData(http.StatusCreated, "ok", filename))
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -24,51 +25,63 @@ func (s *RepoMonitor) CallLoadFrom(ctx context.Context, in *app.RepRequest) (*ap
 
 }
 
-func (r *RepoMonitor) SyncImageStatus() {
-	for {
-
-		time.Sleep(time.Second * 30)
-	}
-}
-
 func downLoadImages(image *app.Images, fullPath string) {
 	image.Status = ImageStatusStart
-	defer func() {
+	var response *http.Response
+	defer func(status *string) {
 		// update the image status at last
 		image.UpdateTime = time.Now().In(app.CnTime)
+		image.Status = *status
 		err := app.UpdateImagesStatus(image)
 		if err != nil {
 			app.Logger.Error(fmt.Sprintf("UpdateImagesStatus id:[%d] ,status:[%s],sourceurl:[%s] Error:%s", image.ID, image.Status, image.SourceUrl, err))
 		}
-	}()
-	var err error
-	var response *http.Response
-	response, err = http.Get(image.SourceUrl)
+
+		managerConf := app.Config.StringMap("manager")
+		callbackurl := fmt.Sprintf(managerConf["callBackUrl"], image.ID, image.Status)
+		response, err = http.Get(callbackurl)
+		if err != nil {
+			app.Logger.Error(fmt.Sprintf("UpdateImagesStatus callback err:%s", err))
+			return
+		}
+		if response.StatusCode != 200 {
+			responseBody, _ := ioutil.ReadAll(response.Body)
+			app.Logger.Error(fmt.Sprintf("downLoadImages Callback Error:%s ", string(responseBody)))
+		}
+
+		response.Body.Close()
+	}(&image.Status)
+	// var err error
+	request, err := http.NewRequest(http.MethodGet, image.SourceUrl, nil)
+	if err != nil {
+		image.Status = ImageStatusFailed
+		return
+	}
+	request.Header.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36")
+	response, err = http.DefaultClient.Do(request)
 	if err != nil {
 		image.Status = ImageStatusFailed
 		return
 	}
 	defer response.Body.Close()
+
 	var savefile *os.File
 	savefile, err = os.Create(fullPath)
 	defer savefile.Close()
-
 	_, err = io.Copy(savefile, response.Body)
 	if err != nil {
 		image.Status = ImageStatusFailed
 		return
 	}
-
 	hash := sha256.New()
 	if _, err := io.Copy(hash, savefile); err != nil {
 		image.Status = ImageStatusFailed
 		return
 	}
-
 	checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
-	fmt.Println(checksumValue)
 	if image.Checksum != checksumValue {
 		err = fmt.Errorf("file's md5 not equal checkSum ")
+		os.Remove(fullPath)
 		image.Status = ImageStatusFailed
 		return
 	}
