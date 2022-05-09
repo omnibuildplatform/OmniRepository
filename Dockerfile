@@ -10,7 +10,7 @@ FROM alpine/git:v2.30.2
 ARG user=root
 ARG group=root
 ARG home=/app
-RUN   -h ${home}
+# RUN addgroup -S ${group} && adduser -S ${user} -G ${group} -h ${home}
 
 USER ${user}
 WORKDIR ${home}
