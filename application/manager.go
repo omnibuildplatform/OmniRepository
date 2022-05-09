@@ -100,7 +100,7 @@ func (r *RepositoryManager) checkToken(request *http.Request) error {
 		token = request.URL.Query().Get("token")
 	}
 	if token == "" || token != r.uploadToken {
-		return errors.New("token mismatch:" + r.uploadToken)
+		return errors.New(token, "token mismatch:"+r.uploadToken)
 	}
 	return nil
 }
