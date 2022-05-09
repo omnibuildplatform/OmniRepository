@@ -5,10 +5,15 @@ resources:
 - pvc.yaml
 - config.yaml
 - rbac.yaml
+- secret.yaml
 commonLabels:
   owner: tommylike
   app: omni-repository-server
 commonAnnotations:
   email: tommylikehu@gmail.com
 namespace: omni-repository
+images:
+- name: swr.cn-north-4.myhuaweicloud.com/opensourceway/omni/omni-repository-test
+  newName: swr.cn-north-4.myhuaweicloud.com/opensourceway/omni/omni-repository-test
+  newTag: 1fa69fc8996a2c08b4d2bbe235c8f2c2d24cec6b
 
