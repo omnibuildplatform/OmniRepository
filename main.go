@@ -20,7 +20,7 @@ func init() {
 	application.InitServer()
 }
 func main() {
-	listenSignals()
+	// listenSignals()
 	var err error
 	manager, err = application.NewRepositoryManager(application.Server().Group("/data/"))
 	if err != nil {
