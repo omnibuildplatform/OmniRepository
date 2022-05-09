@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -22,6 +23,23 @@ func InitDB() (err error) {
 	dbPswd := conf["dbPswd"]
 	dbName := conf["dbName"]
 	dbPort := conf["dbPort"]
+
+	if os.Getenv("DB_HOST") != "" {
+		dbHost = os.Getenv("DB_HOST")
+	}
+	if os.Getenv("DB_USER") != "" {
+		dbUser = os.Getenv("DB_USER")
+	}
+	if os.Getenv("DB_PSWD") != "" {
+		dbPswd = os.Getenv("DB_PSWD")
+	}
+	if os.Getenv("DB_NAME") != "" {
+		dbName = os.Getenv("DB_NAME")
+	}
+	if os.Getenv("DB_PORT") != "" {
+		dbPort = os.Getenv("DB_PORT")
+	}
+
 	sqlStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPswd, dbHost, dbPort, dbName)
 
 	db, err = gorm.Open(mysql.New(mysql.Config{
