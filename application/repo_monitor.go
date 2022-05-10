@@ -44,7 +44,7 @@ func downLoadImages(image *app.Images, fullPath string) {
 			callbackURL = os.Getenv("CALLBACK_URL")
 		}
 
-		callbackurl := fmt.Sprintf(callbackURL, image.ID, image.Status)
+		callbackurl := fmt.Sprintf(callbackURL, image.ExternalID, image.Status)
 		response, err = http.Get(callbackurl)
 		if err != nil {
 			app.Logger.Error(fmt.Sprintf("UpdateImagesStatus callback err:%s", err))
