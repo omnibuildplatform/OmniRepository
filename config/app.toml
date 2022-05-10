@@ -9,7 +9,7 @@ errFile = "/app/logs/run-error-{date}.log"
 [manager]
 dataFolder = "/app/data/"
 uploadToken = "316462d0c029ba707ad1"
-callBackUrl = "http://127.0.0.1:8080/api/v3/baseImages/repoCallback/%d?status=%s"
+callBackUrl = "http://127.0.0.1:8080/api/v3/baseImages/repoCallback/%v?status=%s"
 
 [database]
 dbHost = "192.168.1.193"
