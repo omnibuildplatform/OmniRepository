@@ -9,38 +9,38 @@ func Test_Database(t *testing.T) {
 	Bootstrap("../config")
 	InitDB()
 	//-------------
-	item := new(UserImages)
+	item := new(Images)
 	item.Checksum = "md5234232"
 	item.CreateTime = time.Now().In(CnTime)
 	item.Desc = " just so so"
-	item.FileType = "iso"
+	item.Type = "iso"
 	item.Name = "my iso file"
 	item.UserId = 112
 	item.UserName = "roland"
-	err := AddUserImages(item)
+	err := AddImages(item)
 	if err != nil {
-		t.Fatalf("AddUserImages Error: %s", err)
+		t.Fatalf("AddImages Error: %s", err)
 
 	}
-	t.Logf("AddUserImages result ID:%d", item.ID)
+	t.Logf("AddImages result ID:%d", item.ID)
 
-	getItem, getErr := GetUserImagesByID(item.ID)
+	getItem, getErr := GetImagesByID(item.ID)
 	if getErr != nil {
-		t.Fatalf("GetUserImagesByID Error: %s", getErr)
+		t.Fatalf("GetImagesByID Error: %s", getErr)
 	}
-	t.Logf("GetUserImagesByID result ID:%d", getItem.ID)
+	t.Logf("GetImagesByID result ID:%d", getItem.ID)
 
 	getItem.Name = "other Name"
-	err = UpdateUserImages(getItem)
+	err = UpdateImages(getItem)
 	if err != nil {
-		t.Fatalf("UpdateUserImages Error: %s", err)
+		t.Fatalf("UpdateImages Error: %s", err)
 	}
-	t.Logf("UpdateUserImages result name:%s", getItem.Name)
+	t.Logf("UpdateImages result name:%s", getItem.Name)
 
-	err = DeleteUserImagesById(getItem.ID)
+	err = DeleteImagesById(getItem.ID)
 	if err != nil {
-		t.Fatalf("DeleteUserImagesById Error: %s", err)
+		t.Fatalf("DeleteImagesById Error: %s", err)
 	}
-	t.Logf("DeleteUserImagesById result ID:%d", getItem.ID)
+	t.Logf("DeleteImagesById result ID:%d", getItem.ID)
 
 }

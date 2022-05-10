@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -22,6 +23,23 @@ func InitDB() (err error) {
 	dbPswd := conf["dbPswd"]
 	dbName := conf["dbName"]
 	dbPort := conf["dbPort"]
+
+	if os.Getenv("DB_HOST") != "" {
+		dbHost = os.Getenv("DB_HOST")
+	}
+	if os.Getenv("DB_USER") != "" {
+		dbUser = os.Getenv("DB_USER")
+	}
+	if os.Getenv("DB_PSWD") != "" {
+		dbPswd = os.Getenv("DB_PSWD")
+	}
+	if os.Getenv("DB_NAME") != "" {
+		dbName = os.Getenv("DB_NAME")
+	}
+	if os.Getenv("DB_PORT") != "" {
+		dbPort = os.Getenv("DB_PORT")
+	}
+
 	sqlStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPswd, dbHost, dbPort, dbName)
 
 	db, err = gorm.Open(mysql.New(mysql.Config{
@@ -47,67 +65,93 @@ func InitDB() (err error) {
 	sqlDB.SetMaxOpenConns(100)
 	// SetConnMaxLifetime
 	sqlDB.SetConnMaxLifetime(time.Hour)
-	return nil
+
+	err = CreateTables(db)
+	return err
+}
+func CreateTables(db *gorm.DB) (err error) {
+	if !db.Migrator().HasTable(&Images{}) {
+		err = db.Migrator().CreateTable(&Images{})
+	}
+	return err
 }
 
-type UserImages struct {
-	ID         int       ` description:"id" gorm:"primaryKey"`
-	Name       string    ` description:"name"`
-	Desc       string    ` description:"desc"`
-	UserName   string    ` description:"user_name"`
-	Checksum   string    ` description:"checksum"`
-	FileType   string    ` description:"file_type"`
-	UserId     int       ` description:"user id"`
+type Images struct {
+	ID         int       `description:"id" gorm:"primaryKey"`
+	Name       string    `description:"name"  form:"name"`
+	Desc       string    `description:"desc"   form:"description"`
+	UserName   string    `description:"username" form:"username"`
+	Checksum   string    `description:"checksum" form:"checksum"`
+	Type       string    `description:"type" form:"type"`
+	ExternalID string    `description:"externalID" form:"externalID"`
+	SourceUrl  string    `description:"source url of images" json:"source_url" form:"source_url"`
+	ExtName    string    `description:"file extension name" json:"ext_name"`
+	Status     string    `description:"status:start, downloading,done" json:"status"`
+	UserId     int       ` description:"user id" `
 	CreateTime time.Time ` description:"create time"`
+	UpdateTime time.Time ` description:"update time"`
 }
 
-func (t *UserImages) TableName() string {
-	return "user_images"
+func (t *Images) TableName() string {
+	return "images"
 }
 
-// AddUserImages insert a new ImageMeta into database and returns
-// last inserted Id on success.
-func AddUserImages(m *UserImages) (err error) {
+// AddImages insert a new ImageMeta into database and returns
+// last inserted ID on success.
+func AddImages(m *Images) (err error) {
 	o := GetDB()
-	result := o.Create(m)
+	m.CreateTime = time.Now().In(CnTime)
+	result := o.Debug().Create(m)
 	return result.Error
 }
-func UpdateUserImages(m *UserImages) (err error) {
+func UpdateImages(m *Images) (err error) {
 	o := GetDB()
 	result := o.Updates(m)
 	return result.Error
 }
-
-func GetUserImagesByID(id int) (v *UserImages, err error) {
+func UpdateImagesStatus(m *Images) (err error) {
 	o := GetDB()
-	v = new(UserImages)
+	result := o.Model(m).Select("status", "update_time").Updates(m)
+	return result.Error
+}
+
+func GetImagesByID(id int) (v *Images, err error) {
+	o := GetDB()
+	v = new(Images)
 	v.ID = id
 	tx := o.Model(v)
 	return v, tx.Error
 }
 
-func GetUserImagesByUserID(userid, offset, limit int) (result []*UserImages, err error) {
+func GetImagesByUserID(userid, offset, limit int) (result []*Images, err error) {
 	o := GetDB()
-	v := new(UserImages)
+	v := new(Images)
 	sql := fmt.Sprintf("select * from %s where user_id = %d order by create_time desc limit %d,%d", v.TableName(), userid, offset, limit)
 	tx := o.Raw(sql).Scan(&result)
 	return result, tx.Error
 }
-
-// DeleteUserImagesById
-func DeleteUserImagesById(id int) (err error) {
+func GetImagesByExternalID(externalID string) (result *Images, err error) {
 	o := GetDB()
-	m := new(UserImages)
+	v := new(Images)
+	sql := fmt.Sprintf("select * from %s where external_id = '%s'  limit 1", v.TableName(), externalID)
+	tx := o.Raw(sql).Scan(&result)
+	return result, tx.Error
+}
+
+// DeleteImagesById
+func DeleteImagesById(id int) (err error) {
+	o := GetDB()
+	m := new(Images)
 	m.ID = id
 	result := o.Delete(m)
 	return result.Error
 }
 
-// DeleteMultiUserImagess
-func DeleteMultiUserImagess(names string) (err error) {
+// DeleteMultiImagess
+func DeleteMultiImages(names string) (err error) {
 	o := GetDB()
-	m := new(UserImages)
-	sql := fmt.Sprintf("delete from %s  where job_name in (%s)", m.TableName(), names)
+	m := new(Images)
+	sql := fmt.Sprintf("delete from %s where name in (%s)", m.TableName(), names)
 	result := o.Model(m).Exec(sql)
 	return result.Error
 }
