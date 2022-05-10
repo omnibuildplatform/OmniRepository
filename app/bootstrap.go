@@ -36,7 +36,7 @@ func Bootstrap(configDir string) {
 	//init logger
 	initLogger()
 	color.Info.Printf(
-		"============ Bootstrap (EnvName: %s, Debug: %v) ============\n",
+		"\n============ Bootstrap (EnvName: %s, Debug: %v) ============\n",
 		EnvName, Debug,
 	)
 }
