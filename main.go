@@ -4,7 +4,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/gookit/color"
 	"github.com/omnibuildplatform/OmniRepository/app"
@@ -16,6 +15,7 @@ var (
 )
 
 func init() {
+
 	app.Bootstrap("./config")
 	application.InitServer()
 }
@@ -67,7 +67,6 @@ func handleSignals(c chan os.Signal) {
 	}
 	//sleep and exit
 	color.Info.Println("\nGoodBye...")
-	time.Sleep(time.Second * 3)
 
 	os.Exit(0)
 }

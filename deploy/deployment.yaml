@@ -12,8 +12,10 @@ spec:
       labels:
         component: omni-repository-server
     spec:
+      imagePullSecrets:
+      - name: huawei-swr-image-pull-secret
       containers:
-        - image: tommylike/omni-repository:0.0.1
+        - image: swr.cn-north-4.myhuaweicloud.com/opensourceway/omni/omni-repository-test:1fa69fc8996a2c08b4d2bbe235c8f2c2d24cec6b
           imagePullPolicy: Always
           name: omni-repository-server
           livenessProbe:
@@ -40,9 +42,50 @@ spec:
               protocol: TCP
           env:
             - name: APP_ENV
-              value: "prod"
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: app_env
             - name: UPLOAD_TOKEN
-              value: "316462d0c029ba707ad2"
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: upload_token
+            - name: SERVER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: server_name
+            - name: CALLBACK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: callback_url
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: db_host
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: db_user
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: db_port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: db_name
+            - name: DB_PSWD
+              valueFrom:
+                secretKeyRef:
+                  name: omni-repository-secret
+                  key: db_pswd
           volumeMounts:
             - mountPath: /app/data
               name: data-volume
