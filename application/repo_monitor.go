@@ -87,6 +87,7 @@ func downLoadImages(image *app.Images, fullPath string) {
 		image.Status = ImageStatusFailed
 		return
 	}
+	savefile.Seek(0, io.SeekStart)
 	hash := sha256.New()
 	if _, err := io.Copy(hash, savefile); err != nil {
 		app.Logger.Error(err.Error() + "-------------- os.Copy(): " + fullPath)

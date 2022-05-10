@@ -1,5 +1,5 @@
 name = "OmniRepository"
-httpPort = 8080
+httpPort = 8500
 serverName = "localhost:8080"
 [log]
 logFile = "./logs/info-{date}.log"

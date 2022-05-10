@@ -1,7 +1,7 @@
 name = "OmniRepository"
 timezone = "PRC"
-httpPort = 8080
-serverName = "localhost:8080"
+httpPort = 8500
+serverName = "localhost:8500"
 [log]
 logFile = "/app/logs/run-application-{date}.log"
 errFile = "/app/logs/run-error-{date}.log"
