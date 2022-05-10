@@ -21,13 +21,13 @@ spec:
           livenessProbe:
             httpGet:
               path: "/health"
-              port: 8080
+              port: 8500
             initialDelaySeconds: 3
             periodSeconds: 5
           readinessProbe:
             httpGet:
               path: "/health"
-              port: 8080
+              port: 8500
             initialDelaySeconds: 20
             failureThreshold: 1
             periodSeconds: 5
@@ -37,7 +37,7 @@ spec:
               cpu: 1000m
               memory: 1000Mi
           ports:
-            - containerPort: 8080
+            - containerPort: 8500
               name: http
               protocol: TCP
           env:

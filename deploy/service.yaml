@@ -7,7 +7,7 @@ spec:
     - name: omni-repository
       port: 80
       protocol: TCP
-      targetPort: 8080
+      targetPort: 8500
   selector:
     component: omni-repository-server
   type: ClusterIP
