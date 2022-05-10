@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -22,6 +23,23 @@ func InitDB() (err error) {
 	dbPswd := conf["dbPswd"]
 	dbName := conf["dbName"]
 	dbPort := conf["dbPort"]
+
+	if os.Getenv("DB_HOST") != "" {
+		dbHost = os.Getenv("DB_HOST")
+	}
+	if os.Getenv("DB_USER") != "" {
+		dbUser = os.Getenv("DB_USER")
+	}
+	if os.Getenv("DB_PSWD") != "" {
+		dbPswd = os.Getenv("DB_PSWD")
+	}
+	if os.Getenv("DB_NAME") != "" {
+		dbName = os.Getenv("DB_NAME")
+	}
+	if os.Getenv("DB_PORT") != "" {
+		dbPort = os.Getenv("DB_PORT")
+	}
+
 	sqlStr := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", dbUser, dbPswd, dbHost, dbPort, dbName)
 
 	db, err = gorm.Open(mysql.New(mysql.Config{
@@ -47,23 +65,31 @@ func InitDB() (err error) {
 	sqlDB.SetMaxOpenConns(100)
 	// SetConnMaxLifetime
 	sqlDB.SetConnMaxLifetime(time.Hour)
-	return nil
+
+	err = CreateTables(db)
+	return err
+}
+func CreateTables(db *gorm.DB) (err error) {
+	if !db.Migrator().HasTable(&Images{}) {
+		err = db.Migrator().CreateTable(&Images{})
+	}
+	return err
 }
 
 type Images struct {
-	//name, type，url, description, sha256sum, externalID, author
-	ID         int    `description:"id" gorm:"primaryKey"`
-	Name       string `description:"name"  form:"name"`
-	Desc       string `description:"desc"   form:"description"`
-	UserName   string `description:"username" form:"username"`
-	Checksum   string `description:"checksum" form:"checksum"`
-	Type       string `description:"type" form:"type"`
-	ExternalID string `description:"externalID" form:"externalID"`
-	SourceUrl  string `description:"source url of images" json:"source_url" form:"source_url"`
-	ExtName    string `description:"file extension name" json:"ext_name"`
-
+	ID         int       `description:"id" gorm:"primaryKey"`
+	Name       string    `description:"name"  form:"name"`
+	Desc       string    `description:"desc"   form:"description"`
+	UserName   string    `description:"username" form:"username"`
+	Checksum   string    `description:"checksum" form:"checksum"`
+	Type       string    `description:"type" form:"type"`
+	ExternalID string    `description:"externalID" form:"externalID"`
+	SourceUrl  string    `description:"source url of images" json:"source_url" form:"source_url"`
+	ExtName    string    `description:"file extension name" json:"ext_name"`
+	Status     string    `description:"status:start, downloading,done" json:"status"`
 	UserId     int       ` description:"user id" `
 	CreateTime time.Time ` description:"create time"`
+	UpdateTime time.Time ` description:"update time"`
 }
 
 func (t *Images) TableName() string {
@@ -75,12 +101,17 @@ func (t *Images) TableName() string {
 func AddImages(m *Images) (err error) {
 	o := GetDB()
 	m.CreateTime = time.Now().In(CnTime)
-	result := o.Create(m)
+	result := o.Debug().Create(m)
 	return result.Error
 }
 func UpdateImages(m *Images) (err error) {
 	o := GetDB()
 	result := o.Updates(m)
+	return result.Error
+}
+func UpdateImagesStatus(m *Images) (err error) {
+	o := GetDB()
+	result := o.Model(m).Select("status", "update_time").Updates(m)
 	return result.Error
 }
 

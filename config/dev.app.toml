@@ -1,6 +1,6 @@
 name = "OmniRepository"
 httpPort = 8500
-serverName = "localhost:8500"
+serverName = "localhost:8080"
 [log]
 logFile = "./logs/info-{date}.log"
 errFile = "./logs/error-{date}.log"
@@ -15,3 +15,8 @@ dbUser = "root"
 dbPswd = "rootpswd"
 dbName = "omni_repository"
 dbPort = "3306"
+[redis]
+address = "192.168.1.193"
+port = "6379"
+password = "58243586"
+dbIndex = 0 

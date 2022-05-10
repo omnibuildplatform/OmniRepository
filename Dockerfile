@@ -7,10 +7,10 @@ RUN go mod download
 RUN CGO_ENABLED=0 go build -o omni-repository
 
 FROM alpine/git:v2.30.2
-ARG user=app
-ARG group=app
+ARG user=root
+ARG group=root
 ARG home=/app
-RUN addgroup -S ${group} && adduser -S ${user} -G ${group} -h ${home}
+# RUN addgroup -S ${group} && adduser -S ${user} -G ${group} -h ${home}
 
 USER ${user}
 WORKDIR ${home}
@@ -23,4 +23,4 @@ VOLUME ["${home}/logs","${home}/data"]
 ENV PATH="${home}:${PATH}"
 ENV APP_ENV="prod"
 EXPOSE 8080
-ENTRYPOINT ["/app/omni-repository"]
+ENTRYPOINT ["/app/OmniRepository"]
