@@ -28,9 +28,9 @@ const (
 	Toolchain              PackageType = "toolchain"
 	BuildImageFromRelease  string      = "buildimagefromrelease"
 	BuildImageFromISO      string      = "buildimagefromiso"
-	ImageStatusStart       string      = "start"
+	ImageStatusStart       string      = "created"
 	ImageStatusDownloading string      = "downloading"
-	ImageStatusDone        string      = "done"
+	ImageStatusDone        string      = "succeed"
 	ImageStatusFailed      string      = "failed"
 )
 
