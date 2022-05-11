@@ -167,7 +167,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		return
 	}
 
-	dstFile, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, 0666)
+	dstFile, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
 		color.Error.Println(fullPath + "----------------4----" + err.Error())
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "OpenFile", err.Error()))
