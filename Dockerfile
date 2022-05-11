@@ -23,4 +23,4 @@ VOLUME ["${home}/logs","${home}/data"]
 ENV PATH="${home}:${PATH}"
 ENV APP_ENV="prod"
 EXPOSE 8080
-ENTRYPOINT ["/app/OmniRepository"]
+ENTRYPOINT ["/app/omni_repository"]
