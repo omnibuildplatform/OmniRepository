@@ -62,7 +62,6 @@ func downLoadImages(image *app.Images, fullPath string) {
 
 		response.Body.Close()
 	}(&image.Status)
-	// var err error
 	request, err := http.NewRequest(http.MethodGet, image.SourceUrl, nil)
 	if err != nil {
 		image.Status = ImageStatusFailed
