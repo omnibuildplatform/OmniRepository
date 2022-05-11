@@ -242,6 +242,8 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "error", err.Error()))
 		return
 	}
+	c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "test", item))
+	return
 	downloadURL := "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
 	if item.ExtName != "binary" {
 		downloadURL = downloadURL + "." + item.ExtName
