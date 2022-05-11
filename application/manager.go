@@ -206,7 +206,6 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		}
 	}
 	color.Error.Println("--------------2--5----")
-	image.FileName = filename
 	image.ExtName = extName
 	image.Status = ImageStatusDone
 	err = app.AddImages(&image)
@@ -245,7 +244,7 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 
 	downloadURL := " "
 	if item.Type == BuildImageFromISO {
-		downloadURL = "/data/browse/" + item.Type + "/" + item.ExternalID[0:3] + "/" + item.FileName
+		downloadURL = "/data/browse/" + item.Type + "/" + item.ExternalID[0:3] + "/" + item.ExternalID
 	} else {
 		downloadURL = "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
 	}
