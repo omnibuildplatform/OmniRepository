@@ -138,13 +138,6 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	defer srcFile.Close()
 
 	filename = fileinfo.Filename
-	if len(image.Checksum) < 10 {
-		targetDir = path.Join(r.dataFolder, image.Type, image.ExternalID[0:3])
-
-	} else {
-		filename = image.Checksum + "." + extName
-		targetDir = path.Join(r.dataFolder, image.Checksum[0:3])
-	}
 	if strings.Contains(filename, ".") {
 		splitList := strings.Split(filename, ".")
 		extName = splitList[len(splitList)-1]
@@ -159,6 +152,14 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		}
 	} else {
 		extName = "binary"
+	}
+
+	if len(image.Checksum) < 10 {
+		targetDir = path.Join(r.dataFolder, image.Type, image.ExternalID[0:3])
+		filename = image.ExternalID + "." + extName
+	} else {
+		filename = image.Checksum + "." + extName
+		targetDir = path.Join(r.dataFolder, image.Checksum[0:3])
 	}
 
 	fullPath = path.Join(targetDir, filename)
