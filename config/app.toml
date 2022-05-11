@@ -7,7 +7,7 @@ logFile = "/app/logs/run-application-{date}.log"
 errFile = "/app/logs/run-error-{date}.log"
 
 [manager]
-dataFolder = "/app/data/"
+dataFolder = "./data/"
 uploadToken = "316462d0c029ba707ad1"
 callBackUrl = "http://127.0.0.1:8080/api/v3/baseImages/repoCallback/%d?status=%s"
 

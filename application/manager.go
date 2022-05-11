@@ -211,7 +211,7 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "error", err.Error()))
 		return
 	}
-	downloadURL := "/data/browse/" + item.ExtName + "/" + item.Checksum
+	downloadURL := "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
 	if item.ExtName != "binary" {
 		downloadURL = downloadURL + "." + item.ExtName
 	}
@@ -263,9 +263,10 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		extName = "binary"
 		filename = image.Checksum
 	}
-	targetDir = path.Join(r.dataFolder, extName)
+	targetDir = path.Join(r.dataFolder, item.Checksum[0:3])
 	fullPath = path.Join(targetDir, filename)
 	err = os.MkdirAll(targetDir, os.ModePerm)
+	fmt.Println("-------------fullPath:", fullPath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "MkdirAll", err.Error()))
 		return

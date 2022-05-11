@@ -15,7 +15,7 @@ ARG home=/app
 USER ${user}
 WORKDIR ${home}
 COPY --chown=${user} --from=builder /app/omni-repository .
-COPY --chown=${user} ./config/app.toml ./config/
+COPY --chown=${user} ./config/prod.app.toml ./config/app.toml
 # to fix the directory permission issue
 RUN mkdir -p ${home}/logs $$ -p ${home}/data
 VOLUME ["${home}/logs","${home}/data"]
