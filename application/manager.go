@@ -167,7 +167,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "Copy", err.Error()))
 		return
 	}
-
+	dstFile.Seek(0, io.SeekStart)
 	hash := sha256.New()
 	if _, err := io.Copy(hash, dstFile); err != nil {
 		image.Status = ImageStatusFailed
