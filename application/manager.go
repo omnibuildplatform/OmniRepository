@@ -153,7 +153,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		extName = "binary"
 		filename = image.Checksum
 	}
-	targetDir = path.Join(r.dataFolder, image.Checksum[0:3])
+	targetDir = path.Join(r.dataFolder, image.Type, image.ExternalID[0:3])
 	fullPath = path.Join(targetDir, filename)
 	err = os.MkdirAll(targetDir, os.ModePerm)
 	if err != nil {
