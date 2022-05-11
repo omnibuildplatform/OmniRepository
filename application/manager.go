@@ -188,14 +188,15 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "Copy", err.Error()))
 		return
 	}
-	dstFile.Seek(0, io.SeekStart)
-	hash := sha256.New()
-	if _, err := io.Copy(hash, dstFile); err != nil {
-		color.Error.Println("----------------6----" + err.Error())
-		image.Status = ImageStatusFailed
-		return
-	}
+	color.Error.Println("--------------2--4----" + err.Error())
 	if len(image.Checksum) > 10 {
+		dstFile.Seek(0, io.SeekStart)
+		hash := sha256.New()
+		if _, err := io.Copy(hash, dstFile); err != nil {
+			color.Error.Println("----------------6----" + err.Error())
+			image.Status = ImageStatusFailed
+			return
+		}
 		checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
 		if image.Checksum != checksumValue {
 			color.Error.Println(image.Checksum + "----------------8----" + checksumValue)
@@ -203,7 +204,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 			return
 		}
 	}
-
+	color.Error.Println("--------------2--5----" + err.Error())
 	image.ExtName = extName
 	image.Status = ImageStatusDone
 	err = app.AddImages(&image)
@@ -213,6 +214,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "AddUserImages", err.Error()))
 		return
 	}
+	color.Error.Println("-------------2---5----" + err.Error())
 	c.JSON(http.StatusCreated, app.ExportData(http.StatusCreated, "ok", image))
 }
 
