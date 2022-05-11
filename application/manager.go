@@ -140,26 +140,26 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	filename = fileinfo.Filename
 	if len(image.Checksum) < 10 {
 		targetDir = path.Join(r.dataFolder, image.Type, image.ExternalID[0:3])
-	} else {
-		if strings.Contains(fileinfo.Filename, ".") {
-			splitList := strings.Split(filename, ".")
-			extName = splitList[len(splitList)-1]
-			if strings.Contains(extName, "?") {
-				extName = strings.Split(extName, "?")[0]
-			}
-			if strings.Contains(extName, "#") {
-				extName = strings.Split(extName, "#")[0]
-			}
-			if strings.Contains(extName, "&") {
-				extName = strings.Split(extName, "&")[0]
-			}
 
-			filename = image.Checksum + "." + extName
-		} else {
-			extName = "binary"
-			filename = image.Checksum
-		}
+	} else {
+		filename = image.Checksum + "." + extName
 		targetDir = path.Join(r.dataFolder, image.Checksum[0:3])
+	}
+	if strings.Contains(fileinfo.Filename, ".") {
+		splitList := strings.Split(filename, ".")
+		extName = splitList[len(splitList)-1]
+		if strings.Contains(extName, "?") {
+			extName = strings.Split(extName, "?")[0]
+		}
+		if strings.Contains(extName, "#") {
+			extName = strings.Split(extName, "#")[0]
+		}
+		if strings.Contains(extName, "&") {
+			extName = strings.Split(extName, "&")[0]
+		}
+	} else {
+		extName = "binary"
+		filename = image.Checksum
 	}
 
 	fullPath = path.Join(targetDir, filename)
@@ -242,9 +242,13 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "error", err.Error()))
 		return
 	}
-	c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "test", item))
-	return
-	downloadURL := "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
+
+	downloadURL := " "
+	if item.Type == BuildImageFromISO {
+		downloadURL = "/data/browse/" + item.Type + "/" + item.ExternalID[0:3] + "/" + item.ExternalID
+	} else {
+		downloadURL = "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
+	}
 	if item.ExtName != "binary" {
 		downloadURL = downloadURL + "." + item.ExtName
 	}
