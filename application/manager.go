@@ -2,6 +2,7 @@ package application
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -124,9 +125,10 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		return
 	}
 	image.Checksum = strings.ToUpper(image.Checksum)
-	fmt.Println("==============", image)
+	temp, _ := json.Marshal(&image)
+	fmt.Println("==============", string(temp))
 
-	color.Error.Println(image.Name, "----------------0----", image.Checksum)
+	color.Error.Println(image.Name, "----------------0----", image.ExternalID)
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	if err != nil {
 		color.Error.Println("----------------1.5----" + err.Error())
