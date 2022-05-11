@@ -120,6 +120,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(400, "BindQuery", err.Error()))
 		return
 	}
+	image.Checksum = strings.ToUpper(image.Checksum)
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	defer srcFile.Close()
 
@@ -141,7 +142,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		extName = "binary"
 		filename = image.Checksum
 	}
-	targetDir = path.Join(r.dataFolder, extName)
+	targetDir = path.Join(r.dataFolder, image.Checksum[0:3])
 	fullPath = path.Join(targetDir, filename)
 	err = os.MkdirAll(targetDir, os.ModePerm)
 	if err != nil {
