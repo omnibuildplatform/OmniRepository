@@ -195,11 +195,13 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		image.Status = ImageStatusFailed
 		return
 	}
-	checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
-	if image.Checksum != checksumValue {
-		color.Error.Println(image.Checksum + "----------------8----" + checksumValue)
-		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "file's sha256sum not equal input checkSum ", checksumValue))
-		return
+	if len(image.Checksum) > 10 {
+		checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
+		if image.Checksum != checksumValue {
+			color.Error.Println(image.Checksum + "----------------8----" + checksumValue)
+			c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "file's sha256sum not equal input checkSum ", checksumValue))
+			return
+		}
 	}
 
 	image.ExtName = extName
