@@ -50,7 +50,7 @@ func NewRepositoryManager(routerGroup *gin.RouterGroup) (*RepositoryManager, err
 	conf := app.Config.StringMap("manager")
 	baseFolder := conf["dataFolder"]
 	if !fsutil.DirExist(baseFolder) {
-		color.Error.Printf("data folder %s not existed", baseFolder)
+		color.Error.Println("data folder %s not existed", baseFolder)
 		return nil, errors.New("data folder not existed")
 	}
 	token := conf["uploadToken"]
@@ -59,7 +59,7 @@ func NewRepositoryManager(routerGroup *gin.RouterGroup) (*RepositoryManager, err
 		token = tokenEnv
 	}
 	if len(token) == 0 {
-		color.Error.Printf("upload token is empty")
+		color.Error.Println("upload token is empty")
 		return nil, errors.New("upload token is empty")
 	}
 
@@ -111,22 +111,23 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		image                                  app.Images
 		targetDir, fullPath, filename, extName string
 	)
-	color.Error.Printf("----------------0----")
+	fmt.Println("----------Upload-----------")
+	color.Error.Println("----------------0----")
 	if err := r.checkToken(c.Request); err != nil {
-		color.Error.Printf("----------------0.1----", err)
+		color.Error.Println("----------------0.1----", err)
 		c.JSON(http.StatusBadRequest, app.ExportData(400, "checkToken", err.Error()))
 		return
 	}
 	err := c.MustBindWith(&image, binding.FormMultipart)
 	if err != nil {
-		color.Error.Printf("----------------1----" + err.Error())
+		color.Error.Println("----------------1----" + err.Error())
 		c.JSON(http.StatusBadRequest, app.ExportData(400, "BindQuery", err.Error()))
 		return
 	}
 	image.Checksum = strings.ToUpper(image.Checksum)
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	if err != nil {
-		color.Error.Printf("----------------1.5----" + err.Error())
+		color.Error.Println("----------------1.5----" + err.Error())
 		c.JSON(http.StatusBadRequest, app.ExportData(400, "FormFile", err.Error()))
 		return
 	}
@@ -154,21 +155,21 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	fullPath = path.Join(targetDir, filename)
 	err = os.MkdirAll(targetDir, os.ModePerm)
 	if err != nil {
-		color.Error.Printf(fullPath + "----------------2----" + err.Error())
+		color.Error.Println(fullPath + "----------------2----" + err.Error())
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "MkdirAll", err.Error()))
 		return
 	}
 
 	_, err = os.Stat(fullPath)
 	if err == nil {
-		color.Error.Printf(fullPath + "----------------3----" + err.Error())
+		color.Error.Println(fullPath + "----------------3----" + err.Error())
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "file exist", filename))
 		return
 	}
 
 	dstFile, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE, 0666)
 	if err != nil {
-		color.Error.Printf(fullPath + "----------------4----" + err.Error())
+		color.Error.Println(fullPath + "----------------4----" + err.Error())
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "OpenFile", err.Error()))
 		return
 	}
@@ -176,20 +177,20 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	defer dstFile.Close()
 	//TODO: read & write in chunk?
 	if _, err := io.Copy(dstFile, srcFile); err != nil {
-		color.Error.Printf("----------------5----" + err.Error())
+		color.Error.Println("----------------5----" + err.Error())
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "Copy", err.Error()))
 		return
 	}
 	dstFile.Seek(0, io.SeekStart)
 	hash := sha256.New()
 	if _, err := io.Copy(hash, dstFile); err != nil {
-		color.Error.Printf("----------------6----" + err.Error())
+		color.Error.Println("----------------6----" + err.Error())
 		image.Status = ImageStatusFailed
 		return
 	}
 	checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
 	if image.Checksum != checksumValue {
-		color.Error.Printf(image.Checksum + "----------------8----" + checksumValue)
+		color.Error.Println(image.Checksum + "----------------8----" + checksumValue)
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "file's sha256sum not equal input checkSum ", checksumValue))
 		return
 	}
@@ -199,7 +200,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	err = app.AddImages(&image)
 	if err != nil {
 
-		color.Error.Printf("----------------9---" + err.Error())
+		color.Error.Println("----------------9---" + err.Error())
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "AddUserImages", err.Error()))
 		return
 	}
