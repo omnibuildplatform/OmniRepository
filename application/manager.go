@@ -113,11 +113,11 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	)
 	fmt.Println("----------Upload-----------")
 	color.Error.Println("----------------0----")
-	if err := r.checkToken(c.Request); err != nil {
-		color.Error.Println("----------------0.1----", err)
-		c.JSON(http.StatusBadRequest, app.ExportData(400, "checkToken", err.Error()))
-		return
-	}
+	// if err := r.checkToken(c.Request); err != nil {
+	// 	color.Error.Println("----------------0.1----", err)
+	// 	c.JSON(http.StatusBadRequest, app.ExportData(400, "checkToken", err.Error()))
+	// 	return
+	// }
 	err := c.MustBindWith(&image, binding.FormMultipart)
 	if err != nil {
 		color.Error.Println("----------------1----" + err.Error())
