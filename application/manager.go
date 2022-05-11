@@ -237,9 +237,9 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "bad request", "missing externalID"))
 		return
 	}
-	item, err := app.GetImagesByExternalID(externalID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "error", err.Error()))
+	item, _ := app.GetImagesByExternalID(externalID)
+	if item == nil {
+		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "externalID not found ", externalID))
 		return
 	}
 
