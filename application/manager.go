@@ -112,7 +112,6 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		targetDir, fullPath, filename, extName string
 	)
 	fmt.Println("----------Upload-----------")
-	color.Error.Println("----------------0----")
 	// if err := r.checkToken(c.Request); err != nil {
 	// 	color.Error.Println("----------------0.1----", err)
 	// 	c.JSON(http.StatusBadRequest, app.ExportData(400, "checkToken", err.Error()))
@@ -125,6 +124,9 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		return
 	}
 	image.Checksum = strings.ToUpper(image.Checksum)
+	fmt.Println("==============", image)
+
+	color.Error.Println(image.Name, "----------------0----", image.Checksum)
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	if err != nil {
 		color.Error.Println("----------------1.5----" + err.Error())
