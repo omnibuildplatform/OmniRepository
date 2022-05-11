@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/color"
 	"github.com/omnibuildplatform/OmniRepository/app"
+	"github.com/omnibuildplatform/OmniRepository/application/middleware"
 )
 
 var server *gin.Engine
@@ -20,7 +21,7 @@ func InitServer() {
 		server.Use(gin.Recovery())
 	}
 	app.InitDB()
-	// server.Use(middleware.RequestLog())
+	server.Use(middleware.RequestLog())
 
 	AddRoutes(server)
 
