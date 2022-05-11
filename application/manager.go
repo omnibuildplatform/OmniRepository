@@ -111,8 +111,9 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		image                                  app.Images
 		targetDir, fullPath, filename, extName string
 	)
+	color.Error.Printf("----------------0----")
 	if err := r.checkToken(c.Request); err != nil {
-
+		color.Error.Printf("----------------0.1----", err)
 		c.JSON(http.StatusBadRequest, app.ExportData(400, "checkToken", err.Error()))
 		return
 	}
