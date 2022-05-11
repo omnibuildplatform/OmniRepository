@@ -86,6 +86,7 @@ type Images struct {
 	ExternalID string    `description:"externalID" form:"externalID"`
 	SourceUrl  string    `description:"source url of images" json:"source_url" form:"source_url"`
 	ExtName    string    `description:"file extension name" json:"ext_name"`
+	FileName   string    `description:"file   name" json:"file_name"`
 	Status     string    `description:"status:start, downloading,done" json:"status"`
 	UserId     int       ` description:"user id" `
 	CreateTime time.Time ` description:"create time"`
