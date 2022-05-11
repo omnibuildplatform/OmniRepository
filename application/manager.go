@@ -145,7 +145,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		filename = image.Checksum + "." + extName
 		targetDir = path.Join(r.dataFolder, image.Checksum[0:3])
 	}
-	if strings.Contains(fileinfo.Filename, ".") {
+	if strings.Contains(filename, ".") {
 		splitList := strings.Split(filename, ".")
 		extName = splitList[len(splitList)-1]
 		if strings.Contains(extName, "?") {
@@ -159,7 +159,6 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		}
 	} else {
 		extName = "binary"
-		filename = image.Checksum
 	}
 
 	fullPath = path.Join(targetDir, filename)
