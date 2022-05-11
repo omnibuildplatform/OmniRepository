@@ -14,6 +14,8 @@ spec:
     spec:
       imagePullSecrets:
       - name: huawei-swr-image-pull-secret
+      nodeSelector:
+        omni-repo: "true"
       containers:
         - image: swr.cn-north-4.myhuaweicloud.com/opensourceway/omni/omni-repository-test:1fa69fc8996a2c08b4d2bbe235c8f2c2d24cec6b
           imagePullPolicy: Always
@@ -92,8 +94,6 @@ spec:
             - mountPath: /app/config/app.toml
               name: config-volume
               subPath: app.toml
-          nodeSelector:
-            omni-repo: "true"
       serviceAccountName: omni-repository
       volumes:
         - name: data-volume
