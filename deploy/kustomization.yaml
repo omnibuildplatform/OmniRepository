@@ -15,6 +15,6 @@ namespace: omni-repository
 images:
 - name: swr.cn-north-4.myhuaweicloud.com/opensourceway/omni/omni-repository-test
   newName: swr.cn-north-4.myhuaweicloud.com/opensourceway/omni/omni-repository-test
-  newTag: b4b73577f28ec57c06563411977efec15276a404
+  newTag: 14e068657621ca7dff6cb1638b29ced92ac2ef2d
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
