@@ -10,6 +10,5 @@ func AppHealth(c *gin.Context) {
 		"status": "UP",
 		"info":   app.GitInfo,
 	}
-
 	c.JSON(200, data)
 }

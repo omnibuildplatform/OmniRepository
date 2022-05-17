@@ -23,9 +23,9 @@ func ExportData(code int, title interface{}, data ...interface{}) *JsonData {
 		}
 
 	}
-	if EnvName == EnvProd && code == 500 {
-		resultData.Title = "Error Information"
-		resultData.Data = ""
-	}
+	// if EnvName == EnvProd && code == 500 {
+	// 	resultData.Title = "Error Information"
+	// 	resultData.Data = ""
+	// }
 	return &resultData
 }

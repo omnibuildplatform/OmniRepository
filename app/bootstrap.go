@@ -36,7 +36,7 @@ func Bootstrap(configDir string) {
 	//init logger
 	initLogger()
 	color.Info.Printf(
-		"============ Bootstrap (EnvName: %s, Debug: %v) ============\n",
+		"\n============ Bootstrap (EnvName: %s, Debug: %v) ============\n",
 		EnvName, Debug,
 	)
 }
@@ -99,7 +99,7 @@ func getConfigFiles(configDir string) ([]string, error) {
 
 func initAppEnv() {
 	//load env from .env file
-	err := dotnev.LoadExists(".", ".env")
+	err := dotnev.LoadExists("./config/", ".env")
 	if err != nil {
 		color.Error.Println(err.Error())
 	}
@@ -111,7 +111,6 @@ func initAppEnv() {
 	if port := os.Getenv("APP_PORT"); port != "" {
 		HttpPort, _ = strconv.Atoi(port)
 	}
-
 	if EnvName == EnvDev || EnvName == EnvTest {
 		gin.SetMode(gin.DebugMode)
 		Debug = true

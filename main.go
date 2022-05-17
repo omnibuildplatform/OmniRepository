@@ -20,7 +20,7 @@ func init() {
 	application.InitServer()
 }
 func main() {
-	listenSignals()
+	// listenSignals()
 	var err error
 	manager, err = application.NewRepositoryManager(application.Server().Group("/data/"))
 	if err != nil {
@@ -32,7 +32,7 @@ func main() {
 		color.Error.Printf("failed to start repository manager %v\n ", err)
 		os.Exit(1)
 	}
-	manager.StartLoop()
+
 	color.Info.Printf("============  Begin Running(PID: %d) ============\n", os.Getpid())
 	application.Run()
 }

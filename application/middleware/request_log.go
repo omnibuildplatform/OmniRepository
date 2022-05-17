@@ -14,8 +14,10 @@ import (
 
 func RequestLog() gin.HandlerFunc {
 	//skip success healthiness and readiness check endpoints
-	skip := map[string]int{
-		"/health": 200,
+	// value bool : if true  then record it's body ,
+	skip := map[string]bool{
+		"/health":      false,
+		"/data/upload": true,
 	}
 
 	return func(c *gin.Context) {
@@ -28,18 +30,14 @@ func RequestLog() gin.HandlerFunc {
 
 		// Process request
 		c.Next()
-
 		// log post/put data
-		postData := ""
-		if c.Request.Method != "GET" {
-			buf, _ := ioutil.ReadAll(c.Request.Body)
-			postData = string(buf)
-		}
-
-		if status_code, ok := skip[path]; ok {
-			if status_code == c.Writer.Status() {
-				return
+		postData := "---ignore---"
+		if recordBody, ok := skip[path]; ok {
+			if recordBody {
+				buf, _ := ioutil.ReadAll(c.Request.Body)
+				postData = string(buf)
 			}
+			return
 		}
 
 		app.Logger.Info(

@@ -4,7 +4,7 @@ metadata:
   name: omni-repository-config
 data:
   app.toml: |
-    name = "OmniRepository"
+    name = "omni_repository"
     timezone = "PRC"
     httpPort = 8080
 
