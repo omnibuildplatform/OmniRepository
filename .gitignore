@@ -11,9 +11,7 @@
 *.so
 *.dylib
 # Test binary, built with `go test -c`
-*.test
-config/prod.app.toml
-config/prod.env
+*.test 
 data/
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
