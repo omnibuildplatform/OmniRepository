@@ -2,7 +2,7 @@ package application
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/omnibuildplatform/OmniRepository/application/controller"
+	"github.com/omnibuildplatform/omni-repository/application/controller"
 )
 
 func AddRoutes(r *gin.Engine) {

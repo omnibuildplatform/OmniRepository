@@ -1,7 +1,7 @@
 
 syntax = "proto3";
 
-option go_package = "github.com/omnibuildplatform/OmniRepository/app";
+option go_package = "github.com/omnibuildplatform/omni-repository/app";
 
 package app;
 

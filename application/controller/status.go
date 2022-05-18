@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/omnibuildplatform/OmniRepository/app"
+	"github.com/omnibuildplatform/omni-repository/app"
 )
 
 func AppHealth(c *gin.Context) {

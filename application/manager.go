@@ -17,7 +17,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/omnibuildplatform/OmniRepository/app"
+	"github.com/omnibuildplatform/omni-repository/app"
 )
 
 type PackageType string
