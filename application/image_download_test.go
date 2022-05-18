@@ -3,7 +3,7 @@ package application
 import (
 	"testing"
 
-	"github.com/omnibuildplatform/OmniRepository/app"
+	"github.com/omnibuildplatform/omni-repository/app"
 )
 
 func Test_DownloadImage(t *testing.T) {

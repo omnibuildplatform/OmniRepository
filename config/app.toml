@@ -1,7 +1,7 @@
-name = "omni_repository"
+name = "omni-repository"
 timezone = "PRC"
-httpPort = 8500
-serverName = "localhost:8500"
+httpPort = 8080
+serverName = "localhost:8080"
 [log]
 logFile = "/app/logs/run-application-{date}.log"
 errFile = "/app/logs/run-error-{date}.log"
@@ -21,4 +21,4 @@ dbPort = "3306"
 address = "192.168.1.193"
 port = "6379"
 password = "58243586"
-dbIndex = 0 
+dbIndex = 0

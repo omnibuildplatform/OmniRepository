@@ -15,7 +15,7 @@ const (
 const (
 	BaseConfigFile  = "app.toml"
 	DefaultHttpPort = 8080
-	DefaultAppName  = "OmniRepository"
+	DefaultAppName  = "omni-repository"
 )
 
 var (

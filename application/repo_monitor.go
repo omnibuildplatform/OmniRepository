@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/omnibuildplatform/OmniRepository/app"
+	"github.com/omnibuildplatform/omni-repository/app"
 )
 
 type RepoMonitor struct {

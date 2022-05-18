@@ -1,4 +1,4 @@
-name = "OmniRepository"
+name = "omni-repository"
 httpPort = 8500
 serverName = "localhost:8500"
 [log]

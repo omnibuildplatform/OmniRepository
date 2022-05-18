@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/strutil"
-	"github.com/omnibuildplatform/OmniRepository/app"
+	"github.com/omnibuildplatform/omni-repository/app"
 	"go.uber.org/zap"
 )
 

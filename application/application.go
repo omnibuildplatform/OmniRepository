@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/color"
-	"github.com/omnibuildplatform/OmniRepository/app"
-	"github.com/omnibuildplatform/OmniRepository/application/middleware"
+	"github.com/omnibuildplatform/omni-repository/app"
+	"github.com/omnibuildplatform/omni-repository/application/middleware"
 )
 
 var server *gin.Engine

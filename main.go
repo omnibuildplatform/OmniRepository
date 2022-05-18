@@ -6,8 +6,8 @@ import (
 	"syscall"
 
 	"github.com/gookit/color"
-	"github.com/omnibuildplatform/OmniRepository/app"
-	"github.com/omnibuildplatform/OmniRepository/application"
+	"github.com/omnibuildplatform/omni-repository/app"
+	"github.com/omnibuildplatform/omni-repository/application"
 )
 
 var (
