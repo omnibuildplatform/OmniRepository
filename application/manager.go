@@ -172,7 +172,9 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	_, err = os.Stat(fullPath)
 	if err == nil {
 		color.Error.Println(fullPath + "----------------Stat----")
-		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "file already exists", filename))
+		image.ExtName = extName
+		image.Status = ImageStatusDone
+		c.JSON(http.StatusCreated, app.ExportData(http.StatusCreated, "ok", image))
 		return
 	}
 
