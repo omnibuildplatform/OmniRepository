@@ -120,9 +120,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "MustBindWith", err.Error()))
 		return
 	}
-	if len(image.Checksum) < 10 {
-		image.Checksum = app.RandomString(40)
-	}
+
 	image.Checksum = strings.ToUpper(image.Checksum)
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	if err != nil {
@@ -147,10 +145,17 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	} else {
 		extName = "binary"
 	}
+	if len(image.ExternalID) < 10 {
+		image.ExternalID = app.RandomString(20)
+	}
+
+	hasChecksum := true
 
 	if len(image.Checksum) < 10 {
 		targetDir = path.Join(r.dataFolder, image.Type, image.ExternalID[0:3])
 		filename = image.ExternalID + "." + extName
+		image.Checksum = image.ExternalID
+		hasChecksum = false
 	} else {
 		filename = image.Checksum + "." + extName
 		targetDir = path.Join(r.dataFolder, image.Checksum[0:3])
@@ -184,15 +189,15 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "Copy", err.Error()))
 		return
 	}
-	if len(image.Checksum) > 10 {
-		dstFile.Seek(0, io.SeekStart)
-		hash := sha256.New()
-		if _, err := io.Copy(hash, dstFile); err != nil {
-			color.Error.Println("---------------- io.Copy----" + err.Error())
-			image.Status = ImageStatusFailed
-			return
-		}
-		checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
+	dstFile.Seek(0, io.SeekStart)
+	hash := sha256.New()
+	if _, err := io.Copy(hash, dstFile); err != nil {
+		color.Error.Println("---------------- io.Copy----" + err.Error())
+		image.Status = ImageStatusFailed
+		return
+	}
+	checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
+	if hasChecksum {
 		if image.Checksum != checksumValue {
 			color.Error.Println(image.Checksum + "---------------Checksum----" + checksumValue)
 			c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "file's sha256sum not equal input checkSum ", checksumValue))

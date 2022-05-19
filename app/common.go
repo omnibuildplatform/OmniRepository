@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+const (
+	NUmStr  = "0123456789"
+	CharStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	Pool    = NUmStr + CharStr
+)
+
 // LocTime get local time
 func LocTime() time.Time {
 	return time.Now().Local()
