@@ -152,7 +152,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	hasChecksum := true
 
 	if len(image.Checksum) < 10 {
-		targetDir = path.Join(r.dataFolder, image.Type, image.ExternalID[0:3])
+		targetDir = path.Join(r.dataFolder, image.ExternalID[0:3])
 		filename = image.ExternalID + "." + extName
 		image.Checksum = image.ExternalID
 		hasChecksum = false
