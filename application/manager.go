@@ -146,13 +146,13 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		extName = "binary"
 	}
 	if len(image.ExternalID) < 10 {
-		image.ExternalID = app.RandomString(20)
+		image.ExternalID = strings.ToUpper(app.RandomString(20))
 	}
 
 	hasChecksum := true
 
 	if len(image.Checksum) < 10 {
-		targetDir = path.Join(r.dataFolder, image.ExternalID[0:3])
+		targetDir = path.Join(r.dataFolder, strings.ToUpper(image.ExternalID[0:3]))
 		filename = image.ExternalID + "." + extName
 		image.Checksum = image.ExternalID
 		hasChecksum = false
