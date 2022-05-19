@@ -146,13 +146,13 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		extName = "binary"
 	}
 	if len(image.ExternalID) < 10 {
-		image.ExternalID = strings.ToUpper(app.RandomString(20))
+		image.ExternalID = app.RandomString(20)
 	}
-
+	image.ExternalID = strings.ToUpper(image.ExternalID)
 	hasChecksum := true
 
 	if len(image.Checksum) < 10 {
-		targetDir = path.Join(r.dataFolder, strings.ToUpper(image.ExternalID[0:3]))
+		targetDir = path.Join(r.dataFolder, image.ExternalID[0:3])
 		filename = image.ExternalID + "." + extName
 		image.Checksum = image.ExternalID
 		hasChecksum = false
@@ -234,7 +234,7 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "image not found by this externalID", externalID))
 		return
 	}
-
+	strings.ToUpper(item.Checksum)
 	downloadURL := " "
 	// if item.Type == BuildImageFromISO {
 	// 	downloadURL = "/data/browse/" + item.ExternalID[0:3] + "/" + item.ExternalID
