@@ -236,11 +236,11 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 	}
 
 	downloadURL := " "
-	if item.Type == BuildImageFromISO {
-		downloadURL = "/data/browse/" + item.Type + "/" + item.ExternalID[0:3] + "/" + item.ExternalID
-	} else {
-		downloadURL = "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
-	}
+	// if item.Type == BuildImageFromISO {
+	// 	downloadURL = "/data/browse/" + item.ExternalID[0:3] + "/" + item.ExternalID
+	// } else {
+	downloadURL = "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
+	// }
 	if item.ExtName != "binary" {
 		downloadURL = downloadURL + "." + item.ExtName
 	}
