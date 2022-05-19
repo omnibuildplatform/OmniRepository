@@ -20,11 +20,16 @@ func init() {
 	application.InitServer()
 }
 func main() {
-	// listenSignals()
+
 	var err error
 	manager, err = application.NewRepositoryManager(application.Server().Group("/data/"))
 	if err != nil {
 		color.Error.Printf("failed to initialize repository manager %v\n", err)
+		os.Exit(1)
+	}
+	err = app.InitDB()
+	if err != nil {
+		color.Error.Printf("failed to connect database ,error: %v\n ", err)
 		os.Exit(1)
 	}
 	err = manager.Initialize()

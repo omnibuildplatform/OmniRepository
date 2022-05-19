@@ -120,6 +120,9 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "MustBindWith", err.Error()))
 		return
 	}
+	if len(image.Checksum) < 10 {
+		image.Checksum = app.RandomString(40)
+	}
 	image.Checksum = strings.ToUpper(image.Checksum)
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	if err != nil {
