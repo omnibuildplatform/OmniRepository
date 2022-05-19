@@ -234,7 +234,7 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "image not found by this externalID", externalID))
 		return
 	}
-	strings.ToUpper(item.Checksum)
+	item.Checksum = strings.ToUpper(item.Checksum)
 	downloadURL := " "
 	// if item.Type == BuildImageFromISO {
 	// 	downloadURL = "/data/browse/" + item.ExternalID[0:3] + "/" + item.ExternalID
