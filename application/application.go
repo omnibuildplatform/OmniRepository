@@ -20,7 +20,7 @@ func InitServer() {
 	if app.EnvName == app.EnvDev {
 		server.Use(gin.Recovery())
 	}
-	app.InitDB()
+
 	server.Use(middleware.RequestLog())
 
 	AddRoutes(server)
