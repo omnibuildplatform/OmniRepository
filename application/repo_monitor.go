@@ -77,7 +77,6 @@ func downloadImages(image *app.Images, fullPath string) {
 	_, err = io.Copy(savefile, response.Body)
 	if err != nil {
 		app.Logger.Error(err.Error() + "--------------- os.Copy(fullPath): " + fullPath)
-
 		image.Status = ImageStatusFailed
 		return
 	}
@@ -88,7 +87,7 @@ func downloadImages(image *app.Images, fullPath string) {
 		image.Status = ImageStatusFailed
 		return
 	}
-	checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
+	checksumValue := fmt.Sprintf("%x", hash.Sum(nil))
 	if image.Checksum != checksumValue {
 		err = fmt.Errorf("file's sha256 not equal checkSum ")
 		os.Remove(fullPath)

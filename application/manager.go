@@ -121,7 +121,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		return
 	}
 
-	image.Checksum = strings.ToUpper(image.Checksum)
+	image.Checksum = strings.ToLower(image.Checksum)
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "FormFile", err.Error()))
@@ -148,7 +148,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	if len(image.ExternalID) < 10 {
 		image.ExternalID = app.RandomString(20)
 	}
-	image.ExternalID = strings.ToUpper(image.ExternalID)
+	image.ExternalID = strings.ToLower(image.ExternalID)
 	hasChecksum := true
 
 	if len(image.Checksum) < 10 {
@@ -198,7 +198,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		image.Status = ImageStatusFailed
 		return
 	}
-	checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
+	checksumValue := fmt.Sprintf("%x", hash.Sum(nil))
 	if hasChecksum {
 		if image.Checksum != checksumValue {
 			color.Error.Println(image.Checksum + "---------------Checksum----" + checksumValue)
@@ -236,7 +236,7 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "image not found by this externalID", externalID))
 		return
 	}
-	item.Checksum = strings.ToUpper(item.Checksum)
+	item.Checksum = strings.ToLower(item.Checksum)
 	downloadURL := " "
 	// if item.Type == BuildImageFromISO {
 	// 	downloadURL = "/data/browse/" + item.ExternalID[0:3] + "/" + item.ExternalID
@@ -265,7 +265,7 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		return
 	}
 	image.UserId, _ = strconv.Atoi(c.Query("userid"))
-	image.Checksum = strings.ToUpper(c.Query("checksum"))
+	image.Checksum = strings.ToLower(c.Query("checksum"))
 	if len(image.Checksum) == 0 {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "bad request", "missing checksum"))
 		return
