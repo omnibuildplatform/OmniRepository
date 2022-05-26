@@ -121,7 +121,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		return
 	}
 
-	image.Checksum = strings.ToUpper(image.Checksum)
+	image.Checksum = strings.ToLower(image.Checksum)
 	srcFile, fileinfo, err := c.Request.FormFile("file")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "FormFile", err.Error()))
@@ -148,11 +148,11 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	if len(image.ExternalID) < 10 {
 		image.ExternalID = app.RandomString(20)
 	}
-
+	image.ExternalID = strings.ToLower(image.ExternalID)
 	hasChecksum := true
 
 	if len(image.Checksum) < 10 {
-		targetDir = path.Join(r.dataFolder, image.Type, image.ExternalID[0:3])
+		targetDir = path.Join(r.dataFolder, image.ExternalID[0:3])
 		filename = image.ExternalID + "." + extName
 		image.Checksum = image.ExternalID
 		hasChecksum = false
@@ -172,7 +172,9 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	_, err = os.Stat(fullPath)
 	if err == nil {
 		color.Error.Println(fullPath + "----------------Stat----")
-		c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "file already exists", filename))
+		image.ExtName = extName
+		image.Status = ImageStatusDone
+		c.JSON(http.StatusCreated, app.ExportData(http.StatusCreated, "ok", image))
 		return
 	}
 
@@ -196,7 +198,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		image.Status = ImageStatusFailed
 		return
 	}
-	checksumValue := fmt.Sprintf("%X", hash.Sum(nil))
+	checksumValue := fmt.Sprintf("%x", hash.Sum(nil))
 	if hasChecksum {
 		if image.Checksum != checksumValue {
 			color.Error.Println(image.Checksum + "---------------Checksum----" + checksumValue)
@@ -234,13 +236,13 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "image not found by this externalID", externalID))
 		return
 	}
-
+	item.Checksum = strings.ToLower(item.Checksum)
 	downloadURL := " "
-	if item.Type == BuildImageFromISO {
-		downloadURL = "/data/browse/" + item.Type + "/" + item.ExternalID[0:3] + "/" + item.ExternalID
-	} else {
-		downloadURL = "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
-	}
+	// if item.Type == BuildImageFromISO {
+	// 	downloadURL = "/data/browse/" + item.ExternalID[0:3] + "/" + item.ExternalID
+	// } else {
+	downloadURL = "/data/browse/" + item.Checksum[0:3] + "/" + item.Checksum
+	// }
 	if item.ExtName != "binary" {
 		downloadURL = downloadURL + "." + item.ExtName
 	}
@@ -263,7 +265,7 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		return
 	}
 	image.UserId, _ = strconv.Atoi(c.Query("userid"))
-	image.Checksum = strings.ToUpper(c.Query("checksum"))
+	image.Checksum = strings.ToLower(c.Query("checksum"))
 	if len(image.Checksum) == 0 {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "bad request", "missing checksum"))
 		return
@@ -303,7 +305,7 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 	image.CreateTime = time.Now().In(app.CnTime)
 	_, err = os.Stat(fullPath)
 	if err != nil {
-		fmt.Println("--------1---1----")
+		// fmt.Println("--------1---1----")
 		// if this file not exist .then download it .
 		image.Status = ImageStatusStart
 		go downloadImages(&image, fullPath)
@@ -314,7 +316,7 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		}
 		c.JSON(http.StatusCreated, app.ExportData(http.StatusCreated, "ok.", filename))
 	} else {
-		fmt.Println("--------2--1-----")
+		// fmt.Println("--------2--1-----")
 		//if this file exist . then use it . and mark it succeed
 		image.Status = ImageStatusDone
 		image.UpdateTime = time.Now().In(app.CnTime)

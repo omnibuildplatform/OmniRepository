@@ -97,16 +97,8 @@ func (t *Images) TableName() string {
 // last inserted ID on success.
 func AddImages(m *Images) (err error) {
 	o := GetDB()
-	fmt.Println("---------------------------1", o)
 	m.CreateTime = time.Now().In(CnTime)
-	fmt.Println("---------------------------2", m)
-
-	v := new(Images)
-	v.ID = 130
-	o.Model(v)
-	fmt.Println("----------2.5:", v)
 	result := o.Model(m).Create(m)
-	fmt.Println("---------------------------3", result)
 	return result.Error
 }
 func UpdateImages(m *Images) (err error) {
