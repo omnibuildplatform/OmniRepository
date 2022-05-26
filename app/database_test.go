@@ -6,7 +6,7 @@ import (
 )
 
 func Test_Database(t *testing.T) {
-	Bootstrap("../config")
+	Bootstrap("../config", "master", "abb1b63f0c6195f5dea8fb7768b6fb581b79826e", "22.05.26-17:42:21")
 	InitDB()
 	//-------------
 	item := new(Images)

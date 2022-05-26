@@ -8,7 +8,7 @@ import (
 func AppHealth(c *gin.Context) {
 	data := map[string]interface{}{
 		"status": "UP",
-		"info":   app.GitInfo,
+		"info":   app.Info,
 	}
 	c.JSON(200, data)
 }

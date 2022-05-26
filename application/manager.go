@@ -305,7 +305,6 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 	image.CreateTime = time.Now().In(app.CnTime)
 	_, err = os.Stat(fullPath)
 	if err != nil {
-		// fmt.Println("--------1---1----")
 		// if this file not exist .then download it .
 		image.Status = ImageStatusStart
 		go downloadImages(&image, fullPath)
@@ -316,7 +315,6 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		}
 		c.JSON(http.StatusCreated, app.ExportData(http.StatusCreated, "ok.", filename))
 	} else {
-		// fmt.Println("--------2--1-----")
 		//if this file exist . then use it . and mark it succeed
 		image.Status = ImageStatusDone
 		image.UpdateTime = time.Now().In(app.CnTime)

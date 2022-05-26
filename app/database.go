@@ -15,7 +15,6 @@ func GetDB() *gorm.DB {
 	return db
 }
 
-//connect to database
 func InitDB() (err error) {
 	conf := Config.StringMap("database")
 	dbHost := conf["dbHost"]

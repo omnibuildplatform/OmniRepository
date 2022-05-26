@@ -1,9 +1,9 @@
 package app
 
-type AppInfo struct {
+type ApplicationInfo struct {
 	Tag       string `json:"tag" description:"get tag name"`
-	Version   string `json:"version" description:"git repo version."`
-	ReleaseAt string `json:"releaseAt" description:"latest commit date"`
+	CommitID  string `json:"commitID" description:"git commit ID."`
+	ReleaseAt string `json:"releaseAt" description:"build date"`
 }
 
 const (
@@ -30,5 +30,5 @@ var (
 	//Env name
 	EnvName = EnvDev
 	//App git info
-	GitInfo AppInfo
+	Info ApplicationInfo
 )
