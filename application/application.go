@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/color"
 	"github.com/omnibuildplatform/omni-repository/app"
-	"github.com/omnibuildplatform/omni-repository/application/middleware"
 )
 
 var server *gin.Engine
@@ -17,11 +16,16 @@ func Server() *gin.Engine {
 
 func InitServer() {
 	server = gin.New()
+	skipPaths := []string{"/health"}
 	if app.EnvName == app.EnvDev {
-		server.Use(gin.Recovery())
+		server.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+			SkipPaths: skipPaths,
+		}), gin.Recovery())
+	} else {
+		server.Use(gin.LoggerWithConfig(gin.LoggerConfig{
+			SkipPaths: skipPaths,
+		}))
 	}
-
-	server.Use(middleware.RequestLog())
 
 	AddRoutes(server)
 
