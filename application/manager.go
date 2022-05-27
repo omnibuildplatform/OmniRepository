@@ -4,6 +4,9 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"github.com/omnibuildplatform/omni-repository/common/config"
+	"github.com/omnibuildplatform/omni-repository/common/models"
+	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"io"
 	"net/http"
 	"net/url"
@@ -42,40 +45,28 @@ type RepositoryManager struct {
 	dataFolder  string
 	routerGroup *gin.RouterGroup
 	uploadToken string
-	serverName  string
+	imageStore  *storage.ImageStorage
+	config      config.RepoManager
 }
 
-func NewRepositoryManager(routerGroup *gin.RouterGroup) (*RepositoryManager, error) {
-
-	conf := app.Config.StringMap("manager")
-	baseFolder := conf["dataFolder"]
+func NewRepositoryManager(config config.RepoManager, routerGroup *gin.RouterGroup, imageStore *storage.ImageStorage) (*RepositoryManager, error) {
+	baseFolder := config.DataFolder
 	if !fsutil.DirExist(baseFolder) {
 		color.Error.Println("data folder %s not existed", baseFolder)
 		return nil, errors.New("data folder not existed")
 	}
-	token := conf["uploadToken"]
-	tokenEnv := os.Getenv("UPLOAD_TOKEN")
-	if len(tokenEnv) != 0 {
-		token = tokenEnv
-	}
+	token := config.UploadToken
 	if len(token) == 0 {
 		color.Error.Println("upload token is empty")
 		return nil, errors.New("upload token is empty")
 	}
 
-	serverName := app.Config.String("serverName")
-	serverNameEnv := os.Getenv("Server_Name")
-	if len(serverNameEnv) != 0 {
-		serverName = serverNameEnv
-	}
-	if len(serverName) == 0 {
-		serverName = "localhost"
-	}
 	return &RepositoryManager{
 		dataFolder:  baseFolder,
 		routerGroup: routerGroup,
 		uploadToken: token,
-		serverName:  serverName,
+		imageStore:  imageStore,
+		config:      config,
 	}, nil
 }
 
@@ -111,7 +102,7 @@ func (r *RepositoryManager) checkToken(request *http.Request) error {
 func (r *RepositoryManager) Upload(c *gin.Context) {
 
 	var (
-		image                                  app.Images
+		image                                  models.Image
 		targetDir, fullPath, filename, extName string
 	)
 
@@ -208,7 +199,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	}
 	image.ExtName = extName
 	image.Status = ImageStatusDone
-	err = app.AddImages(&image)
+	err = r.imageStore.AddImage(&image)
 	if err != nil {
 
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "AddUserImages", err.Error()))
@@ -231,7 +222,7 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "bad request", "missing externalID"))
 		return
 	}
-	item, _ := app.GetImagesByExternalID(externalID)
+	item, _ := r.imageStore.GetImageByExternalID(externalID)
 	if item == nil {
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "image not found by this externalID", externalID))
 		return
@@ -252,7 +243,7 @@ func (r *RepositoryManager) Query(c *gin.Context) {
 
 func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 	var (
-		image app.Images
+		image models.Image
 		err   error
 	)
 	if err = r.checkToken(c.Request); err != nil {
@@ -302,13 +293,13 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 		return
 	}
 	image.ExtName = extName
-	image.CreateTime = time.Now().In(app.CnTime)
+	image.CreateTime = time.Now().In(app.TimeZone)
 	_, err = os.Stat(fullPath)
 	if err != nil {
 		// if this file not exist .then download it .
 		image.Status = ImageStatusStart
-		go downloadImages(&image, fullPath)
-		err = app.AddImages(&image)
+		go downloadImages(&image, fullPath, r.imageStore, r.config.CallBackUrl)
+		err = r.imageStore.AddImage(&image)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, app.ExportData(http.StatusInternalServerError, "AddImages", err.Error()))
 			return
@@ -317,7 +308,7 @@ func (r *RepositoryManager) LoadFrom(c *gin.Context) {
 	} else {
 		//if this file exist . then use it . and mark it succeed
 		image.Status = ImageStatusDone
-		image.UpdateTime = time.Now().In(app.CnTime)
+		image.UpdateTime = time.Now().In(app.TimeZone)
 		c.JSON(http.StatusAlreadyReported, app.ExportData(http.StatusAlreadyReported, ".ok.", filename))
 	}
 
