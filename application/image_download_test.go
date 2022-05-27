@@ -7,7 +7,7 @@ import (
 )
 
 func Test_DownloadImage(t *testing.T) {
-	app.Bootstrap("../config")
+	app.Bootstrap("../config", "master", "abb1b63f0c6195f5dea8fb7768b6fb581b79826e", "22.05.26-17:42:21")
 	app.InitDB()
 	var image app.Images
 	image.ID = 20

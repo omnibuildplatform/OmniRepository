@@ -10,8 +10,8 @@ dataFolder = "./data"
 uploadToken = "316462d0c029ba707ad1"
 
 [database]
-dbHost = "192.168.1.193"
+dbHost = "127.0.0.1"
 dbUser = "root"
-dbPswd = "rootpswd"
+dbPswd = "password"
 dbName = "omni_repository"
 dbPort = "3306"

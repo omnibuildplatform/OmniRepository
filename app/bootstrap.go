@@ -12,8 +12,6 @@ import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/dotnev"
 	"github.com/gookit/config/v2/toml"
-	"github.com/gookit/goutil/fsutil"
-	"github.com/gookit/goutil/jsonutil"
 )
 
 var (
@@ -21,7 +19,7 @@ var (
 	CnTime *time.Location
 )
 
-func Bootstrap(configDir string) {
+func Bootstrap(configDir, tag, commitID, releaseAt string) {
 	var err error
 	CnTime, err = time.LoadLocation("Asia/Shanghai")
 	if err != nil {
@@ -32,6 +30,11 @@ func Bootstrap(configDir string) {
 	//Initialize environment
 	initAppEnv()
 	//init app
+	Info = ApplicationInfo{
+		Tag:       tag,
+		CommitID:  commitID,
+		ReleaseAt: releaseAt,
+	}
 	initAppInfo()
 	//init logger
 	initLogger()
@@ -46,18 +49,6 @@ func initAppInfo() {
 	Name = config.String("name", DefaultAppName)
 	if httpPort := config.Int("httpPort", 0); httpPort != 0 {
 		HttpPort = httpPort
-	}
-
-	// git repo info
-	//TODO: update dockerfile to publish git information to app.json
-	GitInfo = AppInfo{}
-	infoFile := "app.json"
-
-	if fsutil.IsFile(infoFile) {
-		err := jsonutil.ReadFile(infoFile, &GitInfo)
-		if err != nil {
-			color.Error.Println(err.Error())
-		}
 	}
 
 }

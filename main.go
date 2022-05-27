@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,16 +12,27 @@ import (
 )
 
 var (
-	manager *application.RepositoryManager
+	manager   *application.RepositoryManager
+	Tag       string //Git tag name, filled when generating binary
+	CommitID  string //Git commit ID, filled when generating binary
+	ReleaseAt string //Publish date, filled when generating binary
 )
 
 func init() {
 
-	app.Bootstrap("./config")
+	app.Bootstrap("./config", Tag, CommitID, ReleaseAt)
 	application.InitServer()
 }
-func main() {
 
+func printVersion() {
+	app.Logger.Info("============ Release Info ============")
+	app.Logger.Info(fmt.Sprintf("Git Tag: %s", app.Info.Tag))
+	app.Logger.Info(fmt.Sprintf("Git CommitID: %s", app.Info.CommitID))
+	app.Logger.Info(fmt.Sprintf("Released At: %s", app.Info.ReleaseAt))
+}
+
+func main() {
+	printVersion()
 	var err error
 	manager, err = application.NewRepositoryManager(application.Server().Group("/data/"))
 	if err != nil {
