@@ -3,6 +3,8 @@ package application
 import (
 	"crypto/sha256"
 	"fmt"
+	"github.com/omnibuildplatform/omni-repository/common/models"
+	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -16,30 +18,24 @@ import (
 type RepoMonitor struct {
 }
 
-func downloadImages(image *app.Images, fullPath string) {
+func downloadImages(image *models.Image, fullPath string, imageStore *storage.ImageStorage, callbackUrl string) {
 	image.Status = ImageStatusStart
 	var response *http.Response
 	defer func(status *string) {
 		// update the image status at last
-		image.UpdateTime = time.Now().In(app.CnTime)
+		image.UpdateTime = time.Now().In(app.TimeZone)
 		image.Status = *status
-		err := app.UpdateImagesStatus(image)
+		err := imageStore.UpdateImageStatus(image)
 		if err != nil {
 			app.Logger.Error(fmt.Sprintf("UpdateImagesStatus id:[%d] ,status:[%s],sourceurl:[%s] Error:%s", image.ID, image.Status, image.SourceUrl, err))
 		}
 
-		managerConf := app.Config.StringMap("manager")
-
-		callbackURL := managerConf["callBackUrl"]
-		if os.Getenv("CALLBACK_URL") != "" {
-			callbackURL = os.Getenv("CALLBACK_URL")
-		}
 		externalid, _ := strconv.Atoi(image.ExternalID)
 		if externalid <= 0 {
 			app.Logger.Error(fmt.Sprintf("image.ExternalID cant change to int :%v", image.ExternalID))
 			return
 		}
-		callbackurl := fmt.Sprintf(callbackURL, externalid, image.Status)
+		callbackurl := fmt.Sprintf(callbackUrl, externalid, image.Status)
 		response, err = http.Get(callbackurl)
 		if err != nil {
 			app.Logger.Error(fmt.Sprintf("UpdateImagesStatus callback err:%s", err))

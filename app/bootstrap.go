@@ -12,18 +12,19 @@ import (
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/dotnev"
 	"github.com/gookit/config/v2/toml"
+	appconfig "github.com/omnibuildplatform/omni-repository/common/config"
 )
 
 var (
-	Config *config.Config
-	CnTime *time.Location
+	AppConfig appconfig.Config
+	TimeZone  *time.Location
 )
 
 func Bootstrap(configDir, tag, commitID, releaseAt string) {
 	var err error
-	CnTime, err = time.LoadLocation("Asia/Shanghai")
+	TimeZone, err = time.LoadLocation("Asia/Shanghai")
 	if err != nil {
-		CnTime = time.FixedZone("CST", 8*3600)
+		TimeZone = time.FixedZone("CST", 8*3600)
 	}
 	//Load config
 	loadConfig(configDir)
@@ -59,13 +60,19 @@ func loadConfig(configDir string) {
 		color.Error.Printf("failed to load config files in folder %s %v\n", configDir, err)
 		os.Exit(1)
 	}
-	Config = config.Default()
+	cfg := config.Default()
 	config.AddDriver(toml.Driver)
-	err = Config.LoadFiles(files...)
+	err = cfg.LoadFiles(files...)
 	if err != nil {
 		color.Error.Println("failed to load config files %v", err)
 		os.Exit(1)
 	}
+	err = config.BindStruct("", &AppConfig)
+	if err != nil {
+		color.Error.Println("config file mismatched with current config object %v", err)
+		os.Exit(1)
+	}
+	HttpPort = AppConfig.ServerConfig.HttpPort
 }
 
 func getConfigFiles(configDir string) ([]string, error) {
@@ -90,7 +97,7 @@ func getConfigFiles(configDir string) ([]string, error) {
 
 func initAppEnv() {
 	//load env from .env file
-	err := dotnev.LoadExists("./config/", ".env")
+	err := dotnev.LoadExists(".", ".env")
 	if err != nil {
 		color.Error.Println(err.Error())
 	}

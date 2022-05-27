@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/omnibuildplatform/omni-repository/common"
 	"os"
 	"os/signal"
 	"syscall"
@@ -34,19 +35,20 @@ func printVersion() {
 func main() {
 	printVersion()
 	var err error
-	manager, err = application.NewRepositoryManager(application.Server().Group("/data/"))
+	store, err := common.NewStore(&app.AppConfig.Store, app.Logger, app.TimeZone)
 	if err != nil {
-		color.Error.Printf("failed to initialize repository manager %v\n", err)
+		app.Logger.Error(fmt.Sprintf("failed to initialize database store %v\n", err))
 		os.Exit(1)
 	}
-	err = app.InitDB()
+	imageStore := store.GetImageStorage()
+	manager, err = application.NewRepositoryManager(app.AppConfig.RepoManager, application.Server().Group("/data/"), imageStore)
 	if err != nil {
-		color.Error.Printf("failed to connect database ,error: %v\n ", err)
+		app.Logger.Error(fmt.Sprintf("failed to initialize repository manager %v\n", err))
 		os.Exit(1)
 	}
 	err = manager.Initialize()
 	if err != nil {
-		color.Error.Printf("failed to start repository manager %v\n ", err)
+		app.Logger.Error(fmt.Sprintf("failed to start repository manager %v\n ", err))
 		os.Exit(1)
 	}
 
