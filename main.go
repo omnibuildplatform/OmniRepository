@@ -1,45 +1,93 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"github.com/omnibuildplatform/omni-repository/common"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gookit/color"
-	"github.com/omnibuildplatform/OmniRepository/app"
-	"github.com/omnibuildplatform/OmniRepository/application"
+	"github.com/omnibuildplatform/omni-repository/app"
+	"github.com/omnibuildplatform/omni-repository/application"
 )
 
+type CancelContext struct {
+	ctx    context.Context
+	cancel context.CancelFunc
+}
+
 var (
-	manager *application.RepositoryManager
+	repoManager   *application.RepositoryManager
+	workManager   *application.WorkManager
+	store         *common.Store
+	globalContext *CancelContext
+	Tag           string //Git tag name, filled when generating binary
+	CommitID      string //Git commit ID, filled when generating binary
+	ReleaseAt     string //Publish date, filled when generating binary
 )
 
 func init() {
 
-	app.Bootstrap("./config")
+	app.Bootstrap("./config", Tag, CommitID, ReleaseAt)
 	application.InitServer()
 }
+
+func printVersion() {
+	app.Logger.Info("============ Release Info ============")
+	app.Logger.Info(fmt.Sprintf("Git Tag: %s", app.Info.Tag))
+	app.Logger.Info(fmt.Sprintf("Git CommitID: %s", app.Info.CommitID))
+	app.Logger.Info(fmt.Sprintf("Released At: %s", app.Info.ReleaseAt))
+}
+
 func main() {
-
+	printVersion()
+	listenSignals()
+	ctx, cancel := context.WithCancel(context.TODO())
+	globalContext = &CancelContext{
+		ctx:    ctx,
+		cancel: cancel,
+	}
 	var err error
-	manager, err = application.NewRepositoryManager(application.Server().Group("/data/"))
+	store, err = common.NewStore(&app.AppConfig.Store, app.Logger)
 	if err != nil {
-		color.Error.Printf("failed to initialize repository manager %v\n", err)
+		app.Logger.Error(fmt.Sprintf("failed to initialize database store %v", err))
 		os.Exit(1)
 	}
-	err = app.InitDB()
+	imageStore := store.GetImageStorage(globalContext.ctx)
+	repoManager, err = application.NewRepositoryManager(
+		globalContext.ctx,
+		app.AppConfig.RepoManager,
+		application.PublicEngine().Group("/"),
+		application.InternalEngine().Group("/"),
+		imageStore,
+		app.AppConfig.ServerConfig.DataFolder, app.Logger)
 	if err != nil {
-		color.Error.Printf("failed to connect database ,error: %v\n ", err)
+		app.Logger.Error(fmt.Sprintf("failed to initialize repository manager %v", err))
 		os.Exit(1)
 	}
-	err = manager.Initialize()
+	err = repoManager.Initialize()
 	if err != nil {
-		color.Error.Printf("failed to start repository manager %v\n ", err)
+		app.Logger.Error(fmt.Sprintf("failed to start repository manager %v", err))
 		os.Exit(1)
 	}
-
-	color.Info.Printf("============  Begin Running(PID: %d) ============\n", os.Getpid())
-	application.Run()
+	app.Logger.Info("repo manager fully start up")
+	workManager, err := application.NewWorkManager(
+		globalContext.ctx,
+		app.AppConfig.WorkManager,
+		app.Logger,
+		imageStore,
+		app.AppConfig.ServerConfig.DataFolder)
+	if err != nil {
+		app.Logger.Error(fmt.Sprintf("failed to start work manager %v", err))
+		os.Exit(1)
+	}
+	go workManager.StartLoop()
+	app.Logger.Info("work manager fully start up")
+	app.Logger.Info(fmt.Sprintf("============  Begin Running(PID: %d) ============", os.Getpid()))
+	application.Run(app.AppConfig.ServerConfig)
 }
 
 // listenSignals Graceful start/stop server
@@ -67,9 +115,21 @@ func handleSignals(c chan os.Signal) {
 	// sync logs
 	_ = app.Logger.Sync()
 
-	if manager != nil {
-		manager.Close()
+	if globalContext != nil {
+		globalContext.cancel()
 	}
+
+	if repoManager != nil {
+		repoManager.Close()
+	}
+	if workManager != nil {
+		workManager.Close()
+	}
+	if store != nil {
+		store.Close()
+	}
+	time.Sleep(3 * time.Second)
+	application.Close()
 	//sleep and exit
 	color.Info.Println("\nGoodBye...")
 

@@ -1,9 +1,9 @@
 package app
 
-type AppInfo struct {
+type ApplicationInfo struct {
 	Tag       string `json:"tag" description:"get tag name"`
-	Version   string `json:"version" description:"git repo version."`
-	ReleaseAt string `json:"releaseAt" description:"latest commit date"`
+	CommitID  string `json:"commitID" description:"git commit ID."`
+	ReleaseAt string `json:"releaseAt" description:"build date"`
 }
 
 const (
@@ -13,9 +13,8 @@ const (
 )
 
 const (
-	BaseConfigFile  = "app.toml"
-	DefaultHttpPort = 8080
-	DefaultAppName  = "OmniRepository"
+	BaseConfigFile = "app.toml"
+	DefaultAppName = "omni-repository"
 )
 
 var (
@@ -26,9 +25,8 @@ var (
 	//Current host name
 	Hostname string
 	//App port listen to
-	HttpPort = DefaultHttpPort
 	//Env name
 	EnvName = EnvDev
 	//App git info
-	GitInfo AppInfo
+	Info ApplicationInfo
 )

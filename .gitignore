@@ -21,4 +21,4 @@ swagger.zip
 .idea
 vendor
 omni-repository
-omniRepo
+bin/
