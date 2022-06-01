@@ -1,15 +1,20 @@
 name = "omni_repository"
 timezone = "PRC"
-httpPort = 8080
+[server]
+publicHttpPort = 8080
+internalHttpPort = 8088
+dataFolder = "./data/"
 serverName = "localhost:8080"
 [log]
 logFile = "/app/logs/run-application-{date}.log"
 errFile = "/app/logs/run-error-{date}.log"
 
 [repoManager]
-dataFolder = "/app/data/"
 uploadToken = "316462d0c029ba707ad1"
 callBackUrl = "http://127.0.0.1:8080/api/v3/baseImages/repoCallback/%d?status=%s"
+[workManager]
+worker = 5
+syncInterval = 5
 
 [persistentStore]
 dbHost = "192.168.1.193"

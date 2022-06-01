@@ -1,12 +1,16 @@
 name = "omni-repository"
-httpPort = 8080
+[server]
+publicHttpPort = 8080
+internalHttpPort = 8088
+dataFolder = "./data/"
 [log]
 logFile = "./logs/info-{date}.log"
 errFile = "./logs/error-{date}.log"
 [repoManager]
-dataFolder = "./data"
 uploadToken = "316462d0c029ba707ad1"
-
+[workManager]
+worker = 5
+syncInterval = 10
 [persistentStore]
 host = "127.0.0.1"
 user = "root"

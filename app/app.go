@@ -13,9 +13,8 @@ const (
 )
 
 const (
-	BaseConfigFile  = "app.toml"
-	DefaultHttpPort = 8080
-	DefaultAppName  = "omni-repository"
+	BaseConfigFile = "app.toml"
+	DefaultAppName = "omni-repository"
 )
 
 var (
@@ -26,7 +25,6 @@ var (
 	//Current host name
 	Hostname string
 	//App port listen to
-	HttpPort = DefaultHttpPort
 	//Env name
 	EnvName = EnvDev
 	//App git info

@@ -7,10 +7,13 @@ type (
 		RepoManager  RepoManager     `mapstructure:"repoManager"`
 		LogConfig    LogConfig       `mapstructure:"log"`
 		Store        PersistentStore `mapstructure:"persistentStore"`
+		WorkManager  WorkManager     `mapstructure:"workManager"`
 	}
 
 	ServerConfig struct {
-		HttpPort int `mapstructure:"httpPort"`
+		PublicHttpPort   int    `mapstructure:"publicHttpPort"`
+		InternalHttpPort int    `mapstructure:"internalHttpPort"`
+		DataFolder       string `mapstructure:"dataFolder"`
 	}
 
 	LogConfig struct {
@@ -19,9 +22,13 @@ type (
 	}
 
 	RepoManager struct {
-		DataFolder  string `mapstructure:"dataFolder"`
 		UploadToken string `mapstructure:"uploadToken"`
 		CallBackUrl string `mapstructure:"callBackUrl"`
+	}
+
+	WorkManager struct {
+		Worker       int `mapstructure:"worker"`
+		SyncInterval int `mapstructure:"syncInterval"`
 	}
 
 	PersistentStore struct {

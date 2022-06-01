@@ -2,31 +2,22 @@ package app
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
-	"strconv"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/color"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/dotnev"
 	"github.com/gookit/config/v2/toml"
 	appconfig "github.com/omnibuildplatform/omni-repository/common/config"
+	"os"
+	"path/filepath"
 )
 
 var (
 	AppConfig appconfig.Config
-	TimeZone  *time.Location
 )
 
 func Bootstrap(configDir, tag, commitID, releaseAt string) {
-	var err error
-	TimeZone, err = time.LoadLocation("Asia/Shanghai")
-	if err != nil {
-		TimeZone = time.FixedZone("CST", 8*3600)
-	}
-	//Load config
+	//Load configIn(app.TimeZone)
 	loadConfig(configDir)
 	//Initialize environment
 	initAppEnv()
@@ -48,9 +39,6 @@ func Bootstrap(configDir, tag, commitID, releaseAt string) {
 func initAppInfo() {
 	//update App info
 	Name = config.String("name", DefaultAppName)
-	if httpPort := config.Int("httpPort", 0); httpPort != 0 {
-		HttpPort = httpPort
-	}
 
 }
 
@@ -72,7 +60,6 @@ func loadConfig(configDir string) {
 		color.Error.Println("config file mismatched with current config object %v", err)
 		os.Exit(1)
 	}
-	HttpPort = AppConfig.ServerConfig.HttpPort
 }
 
 func getConfigFiles(configDir string) ([]string, error) {
@@ -105,9 +92,6 @@ func initAppEnv() {
 	Hostname, _ = os.Hostname()
 	if env := os.Getenv("APP_ENV"); env != "" {
 		EnvName = env
-	}
-	if port := os.Getenv("APP_PORT"); port != "" {
-		HttpPort, _ = strconv.Atoi(port)
 	}
 	if EnvName == EnvDev || EnvName == EnvTest {
 		gin.SetMode(gin.DebugMode)
