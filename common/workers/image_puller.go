@@ -5,11 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gookit/goutil/fsutil"
-	"github.com/omnibuildplatform/omni-repository/common/models"
-	"github.com/omnibuildplatform/omni-repository/common/storage"
-	"go.uber.org/atomic"
-	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,6 +15,13 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/gookit/goutil/fsutil"
+	"github.com/omnibuildplatform/omni-repository/app"
+	"github.com/omnibuildplatform/omni-repository/common/models"
+	"github.com/omnibuildplatform/omni-repository/common/storage"
+	"go.uber.org/atomic"
+	"go.uber.org/zap"
 )
 
 const MaxTempFileSize = 100 * 1024 * 1024
@@ -42,6 +44,7 @@ type ImagePuller struct {
 	Worker       int
 	Client       http.Client
 	BlockChannel chan SingleBlock
+	ImageSize    int
 }
 
 func NewImagePuller(imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int) *ImagePuller {
@@ -65,6 +68,10 @@ func (r *ImagePuller) cleanup(err error) {
 	r.Image.Status = models.ImageFailed
 	r.Image.StatusDetail = err.Error()
 	_ = r.ImageStore.UpdateImageStatusAndDetail(r.Image)
+
+	//send failed message
+	go app.PostDownloadStatusEvent(r.Image.ExternalID, string(models.ImageBlockFailed), r.Image.ExternalComponent, 0, 0, "github.com/omnibuildplatform/omni-repository/common/workers/image_puller")
+
 }
 
 func (r *ImagePuller) DoWork(ctx context.Context) error {
@@ -80,6 +87,7 @@ func (r *ImagePuller) DoWork(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
 	// 2. fetch object size
 	// 3. split and download objects in parallel
 	wg := sync.WaitGroup{}
@@ -114,6 +122,7 @@ func (r *ImagePuller) DoWork(ctx context.Context) error {
 		r.cleanup(err)
 		return err
 	}
+
 	r.Logger.Info(fmt.Sprintf("image %s successfully created.", r.Image.SourceUrl))
 	r.Image.Status = models.ImageDownloaded
 	r.Image.StatusDetail = "image successfully downloaded"
@@ -153,6 +162,7 @@ func (r *ImagePuller) ConstructImageFile() error {
 		r.Logger.Info(fmt.Sprintf("write %d bytes to file %s", n, imagePath))
 		return nil
 	})
+
 	return err
 }
 
@@ -192,16 +202,16 @@ func (r *ImagePuller) downloadPrepare(ctx context.Context, wg *sync.WaitGroup) (
 			result.Header.Get("content-length"),
 			r.Image.SourceUrl))
 	}
-	blockSize, err := strconv.Atoi(result.Header.Get("content-length"))
+	r.ImageSize, err = strconv.Atoi(result.Header.Get("content-length"))
 	if err != nil {
 		return 0, errors.New(fmt.Sprintf("unaccptable content length %s for image %s", result.Header.Get("content-length"), r.Image.SourceUrl))
 	}
 
 	var blocks []SingleBlock
-	for start := 0; start <= blockSize; start += MaxTempFileSize {
+	for start := 0; start <= r.ImageSize; start += MaxTempFileSize {
 		endSize := start + MaxTempFileSize - 1
-		if endSize > blockSize-1 {
-			endSize = blockSize - 1
+		if endSize > r.ImageSize-1 {
+			endSize = r.ImageSize - 1
 		}
 		blocks = append(blocks, SingleBlock{
 			StartIndex: int64(start),
@@ -248,8 +258,10 @@ func (r *ImagePuller) startWorkerLoop(ctx context.Context, wg *sync.WaitGroup, t
 					r.Logger.Error(fmt.Sprintf("block %s [%d, %d] for image %s will reaches max retry. failed, error %v",
 						block.Index, block.StartIndex, block.EndIndex, r.Image.Name, err))
 					totalBlocks.Sub(1)
+
 				}
 			} else {
+				go app.PostDownloadStatusEvent(r.Image.ExternalID, string(models.ImageBlockFinished), r.Image.ExternalComponent, (block.EndIndex - block.StartIndex + 1), (r.ImageSize), "github.com/omnibuildplatform/omni-repository/common/workers/image_puller")
 				totalBlocks.Sub(1)
 			}
 		}

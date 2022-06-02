@@ -4,6 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path"
+	"regexp"
+	"strings"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -15,12 +22,6 @@ import (
 	"github.com/omnibuildplatform/omni-repository/common/models"
 	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"go.uber.org/zap"
-	"io"
-	"net/http"
-	"os"
-	"path"
-	"regexp"
-	"strings"
 )
 
 const BROWSE_PREFIX = "/browse"
@@ -203,12 +204,12 @@ func (r *RepositoryManager) Load(c *gin.Context) {
 
 	var err error
 	if err = c.ShouldBindJSON(&imageRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"ShouldBindJSON error": err.Error()})
 		return
 	}
 	err = r.paraValidator.Struct(imageRequest)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"paraValidator error": err.Error()})
 		return
 	}
 	if len(imageRequest.SourceUrl) == 0 {
@@ -219,7 +220,7 @@ func (r *RepositoryManager) Load(c *gin.Context) {
 	image := r.imageDto.GetImageFromRequest(imageRequest)
 	//TODO: use custom validator instead
 	if err := r.validCheckSum(image.Checksum, image.Algorithm); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"validCheckSum error": err.Error()})
 		return
 	}
 	//calculate image relative path
@@ -227,14 +228,15 @@ func (r *RepositoryManager) Load(c *gin.Context) {
 	image.ChecksumPath = path.Join(GetImageRelativeFolder(&image),
 		fmt.Sprintf("%s.%ssum", image.Name, strings.ToLower(image.Algorithm)))
 	if existed, err := r.imageStore.GetImageByChecksum(image.Checksum); err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("image has identical checksum already existed %s",
+		c.JSON(http.StatusBadRequest, gin.H{"GetImageByChecksum error": fmt.Sprintf("image has identical checksum already existed %s",
 			existed.FileName)})
+		return
 	}
 	err = r.imageStore.AddImage(&image)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"AddImage error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, image)
-	return
+
 }

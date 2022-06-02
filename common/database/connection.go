@@ -3,9 +3,10 @@ package database
 import (
 	"errors"
 	"fmt"
+	"time"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"time"
 )
 
 func ConnectToDB(dbUser, dbPassword, dbHost string, dbPort int, dbName string) (*gorm.DB, error) {

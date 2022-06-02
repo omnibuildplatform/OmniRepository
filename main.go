@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/omnibuildplatform/omni-repository/common"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/omnibuildplatform/omni-repository/common"
 
 	"github.com/gookit/color"
 	"github.com/omnibuildplatform/omni-repository/app"
@@ -84,6 +85,7 @@ func main() {
 		app.Logger.Error(fmt.Sprintf("failed to start work manager %v", err))
 		os.Exit(1)
 	}
+	go app.InitMQ()
 	go workManager.StartLoop()
 	app.Logger.Info("work manager fully start up")
 	app.Logger.Info(fmt.Sprintf("============  Begin Running(PID: %d) ============", os.Getpid()))
