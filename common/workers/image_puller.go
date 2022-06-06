@@ -1,6 +1,5 @@
 package workers
 
-import "C"
 import (
 	"context"
 	"errors"

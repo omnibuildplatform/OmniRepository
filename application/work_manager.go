@@ -44,16 +44,16 @@ func NewWorkManager(ctx context.Context, config config.WorkManager, logger *zap.
 	return &workManager, nil
 }
 
-func (w *WorkManager) GetPullingImageWorker(image *models.Image, localFolder string, worker int) (*workers.ImagePuller, error) {
-	return workers.NewImagePuller(w.Config.Workers.ImagePuller, w.ImageStore, w.Logger, image, localFolder, worker)
-}
-
 func (w *WorkManager) GetVerifyingImageWorker(image *models.Image, localFolder string, worker int) (*workers.ImageVerifier, error) {
 	return workers.NewImageVerifier(w.ImageStore, w.Logger, image, localFolder, worker)
 }
 
 func (w *WorkManager) GetPushImageWorker(image *models.Image, localFolder string, worker int) (*workers.ImagePusher, error) {
 	return workers.NewImagePusher(w.Config.Workers.ImagePusher, w.ImageStore, image, localFolder, w.Logger, worker)
+}
+
+func (w *WorkManager) GetPullingImageWorker(image *models.Image, localFolder string, worker int) (*workers.ImagePuller, error) {
+	return workers.NewImagePuller(w.Config.Workers.ImagePuller, w.ImageStore, w.Logger, image, localFolder, worker)
 }
 
 func (w *WorkManager) Close() {
