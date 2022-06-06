@@ -36,6 +36,12 @@ func (i *ImageStorage) UpdateImageStatus(m *models.Image) (err error) {
 	return result.Error
 }
 
+func (i *ImageStorage) UpdateImageExternalPath(m *models.Image) (err error) {
+	m.UpdateTime = time.Now()
+	result := i.db.WithContext(i.context).Model(m).Select("image_path", "checksum_path", "update_time").Updates(m)
+	return result.Error
+}
+
 func (i *ImageStorage) GetImageByChecksum(checksum string) (models.Image, error) {
 	var image models.Image
 	result := i.db.WithContext(i.context).Where("checksum = ?", checksum).Order("create_time desc").First(&image)
@@ -72,9 +78,21 @@ func (i *ImageStorage) GetDownloadingImages() ([]models.Image, error) {
 	return images, result.Error
 }
 
+func (i *ImageStorage) GetPushingImages() ([]models.Image, error) {
+	var images []models.Image
+	result := i.db.WithContext(i.context).Where("status = ?", models.ImagePushing).Order("create_time desc").Find(&images)
+	return images, result.Error
+}
+
 func (i *ImageStorage) GetImageForVerify(limit int) ([]models.Image, error) {
 	var images []models.Image
 	result := i.db.WithContext(i.context).Where("status = ?", models.ImageDownloaded).Order("create_time desc").Limit(limit).Find(&images)
+	return images, result.Error
+}
+
+func (i *ImageStorage) GetImageForPush(limit int) ([]models.Image, error) {
+	var images []models.Image
+	result := i.db.WithContext(i.context).Where("status = ? AND publish = ?", models.ImageVerified, true).Order("create_time desc").Limit(limit).Find(&images)
 	return images, result.Error
 }
 

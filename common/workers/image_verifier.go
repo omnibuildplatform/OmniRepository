@@ -26,15 +26,17 @@ type ImageVerifier struct {
 	Image       *models.Image
 	LocalFolder string
 	Logger      *zap.Logger
+	Worker      int
 }
 
-func NewImageVerifier(imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string) *ImageVerifier {
+func NewImageVerifier(imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int) (*ImageVerifier, error) {
 	return &ImageVerifier{
 		LocalFolder: localFolder,
 		Logger:      logger,
 		ImageStore:  imageStore,
 		Image:       image,
-	}
+		Worker:      worker,
+	}, nil
 }
 
 func (r *ImageVerifier) cleanup(err error) {

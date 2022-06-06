@@ -5,13 +5,28 @@ metadata:
 data:
   app.toml: |
     name = "omni-repository"
-    timezone = "PRC"
-    httpPort = 8080
-
+    [server]
+    publicHttpPort = 8080
+    internalHttpPort = 8088
+    dataFolder = "/app/data/"
     [log]
     logFile = "/app/logs/run-application-{date}.log"
     errFile = "/app/logs/run-error-{date}.log"
-
-    [manager]
-    dataFolder = "/app/data/"
-    uploadToken = "316462d0c029ba707ad1"
+    [repoManager]
+    [workManager]
+    threads = 10
+    syncInterval = 30
+        [workManager.workers.imagerPusher]
+            endpoint = "obs.ap-southeast-1.myhuaweicloud.com"
+            ak = ""
+            sk = ""
+            bucket = ""
+            partSize = 419430400
+    [persistentStore]
+    host = "192.168.1.193"
+    user = "root"
+    password = "rootpswd"
+    dbname = "omni_repository"
+    port = "3306"
+    [mq]
+    kafka_brokers = "192.168.1.193:9092"

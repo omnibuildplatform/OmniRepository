@@ -7,11 +7,17 @@ dataFolder = "./data/"
 logFile = "/app/logs/run-application-{date}.log"
 errFile = "/app/logs/run-error-{date}.log"
 [repoManager]
-uploadToken = "316462d0c029ba707ad1"
-callBackUrl = "http://mymanager:8080/api/v3/baseImages/repoCallback/%d?status=%s"
 [workManager]
-worker = 5
-syncInterval = 5
+threads = 10
+syncInterval = 30
+    [workManager.workers.imagePuller]
+        maxRetry = 5
+    [workManager.workers.imagerPusher]
+        endpoint = "obs.ap-southeast-1.myhuaweicloud.com"
+        ak = ""
+        sk = ""
+        bucket = ""
+        partSize = 419430400
 [persistentStore]
 host = "192.168.1.193"
 user = "root"

@@ -40,54 +40,11 @@ spec:
               memory: 1000Mi
           ports:
             - containerPort: 8080
-              name: http
+              name: public-http
               protocol: TCP
-          env:
-            - name: APP_ENV
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: app_env
-            - name: UPLOAD_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: upload_token
-            - name: SERVER_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: server_name
-            - name: CALLBACK_URL
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: callback_url
-            - name: DB_HOST
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: db_host
-            - name: DB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: db_user
-            - name: DB_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: db_port
-            - name: DB_NAME
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: db_name
-            - name: DB_PSWD
-              valueFrom:
-                secretKeyRef:
-                  name: omni-repository-secret
-                  key: db_pswd
+            - containerPort: 8088
+              name: internal-http
+              protocol: TCP
           volumeMounts:
             - mountPath: /app/data
               name: data-volume

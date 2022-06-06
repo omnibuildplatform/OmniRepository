@@ -58,6 +58,11 @@ func main() {
 		os.Exit(1)
 	}
 	imageStore := store.GetImageStorage(globalContext.ctx)
+	err = app.InitMQ()
+	if err != nil {
+		app.Logger.Error(fmt.Sprintf("failed to initialize message worker %v", err))
+		os.Exit(1)
+	}
 	repoManager, err = application.NewRepositoryManager(
 		globalContext.ctx,
 		app.AppConfig.RepoManager,
@@ -85,7 +90,6 @@ func main() {
 		app.Logger.Error(fmt.Sprintf("failed to start work manager %v", err))
 		os.Exit(1)
 	}
-	go app.InitMQ()
 	go workManager.StartLoop()
 	app.Logger.Info("work manager fully start up")
 	app.Logger.Info(fmt.Sprintf("============  Begin Running(PID: %d) ============", os.Getpid()))
