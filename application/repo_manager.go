@@ -37,7 +37,6 @@ type RepositoryManager struct {
 	dataFolder          string
 	publicRouterGroup   *gin.RouterGroup
 	internalRouterGroup *gin.RouterGroup
-	uploadToken         string
 	imageStore          *storage.ImageStorage
 	config              config.RepoManager
 	paraValidator       *validator.Validate
@@ -50,17 +49,11 @@ func NewRepositoryManager(ctx context.Context, config config.RepoManager, public
 		color.Error.Println("data folder %s not existed", baseFolder)
 		return nil, errors.New("data folder not existed")
 	}
-	token := config.UploadToken
-	if len(token) == 0 {
-		color.Error.Println("upload token is empty")
-		return nil, errors.New("upload token is empty")
-	}
 	return &RepositoryManager{
 		Context:             ctx,
 		dataFolder:          baseFolder,
 		publicRouterGroup:   publicRouterGroup,
 		internalRouterGroup: internalRouterGroup,
-		uploadToken:         token,
 		imageStore:          imageStore,
 		config:              config,
 		imageDto:            dtos.NewImageDTO(BROWSE_PREFIX),

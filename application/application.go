@@ -37,14 +37,14 @@ func InitServer() {
 			SkipPaths: skipPaths,
 		}))
 	}
+	AddRoutes(publicEngine)
 
 	internalEngine = gin.New()
 	if app.EnvName == app.EnvDev {
 		internalEngine.Use(gin.Logger(), gin.Recovery())
 	} else {
-		publicEngine.Use(gin.Logger())
+		internalEngine.Use(gin.Logger())
 	}
-	AddRoutes(publicEngine)
 }
 
 func Close() {

@@ -7,7 +7,6 @@ dataFolder = "./data/"
 logFile = "./logs/info-{date}.log"
 errFile = "./logs/error-{date}.log"
 [repoManager]
-uploadToken = "316462d0c029ba707ad1"
 [workManager]
 threads = 10
 syncInterval = 30

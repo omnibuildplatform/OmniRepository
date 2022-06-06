@@ -23,8 +23,6 @@ type (
 	}
 
 	RepoManager struct {
-		UploadToken string `mapstructure:"uploadToken"`
-		CallBackUrl string `mapstructure:"callBackUrl"`
 	}
 
 	WorkManager struct {
