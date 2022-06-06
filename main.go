@@ -58,11 +58,13 @@ func main() {
 		os.Exit(1)
 	}
 	imageStore := store.GetImageStorage(globalContext.ctx)
+	app.Logger.Info("initialize database store successfully")
 	err = app.InitMQ()
 	if err != nil {
 		app.Logger.Error(fmt.Sprintf("failed to initialize message worker %v", err))
 		os.Exit(1)
 	}
+	app.Logger.Info("initialize message hub successfully")
 	repoManager, err = application.NewRepositoryManager(
 		globalContext.ctx,
 		app.AppConfig.RepoManager,
