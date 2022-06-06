@@ -10,6 +10,8 @@ errFile = "/app/logs/run-error-{date}.log"
 [workManager]
 threads = 10
 syncInterval = 30
+    [workManager.workers.imagePuller]
+        maxRetry = 5
     [workManager.workers.imagerPusher]
         endpoint = "obs.ap-southeast-1.myhuaweicloud.com"
         ak = ""

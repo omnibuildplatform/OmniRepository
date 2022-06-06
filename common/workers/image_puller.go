@@ -26,7 +26,6 @@ import (
 
 const MaxTempFileSize = 100 * 1024 * 1024
 const TempFolder = ".temp"
-const MaxRetry = 3
 const UnReachableBlock = 100
 
 type SingleBlock struct {
@@ -251,7 +250,7 @@ func (r *ImagePuller) startWorkerLoop(ctx context.Context, wg *sync.WaitGroup, t
 			if err != nil {
 				r.Logger.Error(fmt.Sprintf("Failed to download block %s [%d, %d] for image %s, error %v",
 					block.Index, block.StartIndex, block.EndIndex, r.Image.Name, err))
-				if block.RetryCount <= MaxRetry {
+				if block.RetryCount <= r.Config.MaxRetry {
 					r.Logger.Info(fmt.Sprintf("block %s [%d, %d] for image %s will have another try",
 						block.Index, block.StartIndex, block.EndIndex, r.Image.Name))
 					block.RetryCount += 1
