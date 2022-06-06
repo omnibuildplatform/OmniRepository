@@ -50,7 +50,7 @@ spec:
               name: data-volume
             - mountPath: /app/config/app.toml
               name: config-volume
-              subPath: app.toml
+              subPath: app_toml
       serviceAccountName: omni-repository
       volumes:
         - name: data-volume
