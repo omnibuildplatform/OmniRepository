@@ -2,8 +2,9 @@ package app
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/Shopify/sarama"
@@ -23,21 +24,20 @@ var (
 	cloudEventClient client.Client
 )
 
-func InitMQ() {
+func InitMQ() error {
 	saramaConfig = sarama.NewConfig()
 	saramaConfig.Version = sarama.V2_8_1_0
 	brokers = strings.Split(AppConfig.MQ.KafkaBrokers, ",")
 	saramaConfig.Consumer.Offsets.Initial = sarama.OffsetNewest
 	sender, err := kafka_sarama.NewSender(brokers, saramaConfig, Topic_DownloadStatus)
 	if err != nil {
-		log.Fatalf("failed to create protocol: %s \n", err.Error())
-		os.Exit(1)
+		return errors.New(fmt.Sprintf("failed to create protocol: %v", err.Error()))
 	}
 	cloudEventClient, err = cloudevents.NewClient(sender, cloudevents.WithTimeNow(), cloudevents.WithUUIDs())
 	if err != nil {
-		log.Fatalf("failed to create cloudevents client, %v \n", err)
-		os.Exit(1)
+		return errors.New(fmt.Sprintf("failed to create cloudevents client, %v", err))
 	}
+	return nil
 }
 
 func RegisterEventLinstener() {
@@ -59,5 +59,4 @@ func PostDownloadStatusEvent(externalID, eventType, subject string, blockSize in
 	if err != nil {
 		log.Fatalf("failed to PostDownloadStatusEvent ,error: %v \n", err)
 	}
-
 }
