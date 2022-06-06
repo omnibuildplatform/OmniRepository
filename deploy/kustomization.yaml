@@ -3,7 +3,6 @@ resources:
 - deployment.yaml
 - service.yaml
 - pvc.yaml
-- config.yaml
 - rbac.yaml
 - secret.yaml
 commonLabels:
