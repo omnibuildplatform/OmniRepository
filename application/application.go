@@ -50,11 +50,15 @@ func InitServer() {
 func Close() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	if err := publicHttpServer.Shutdown(ctx); err != nil {
-		app.Logger.Error(fmt.Sprintf("failed to close public server %v", err))
+	if publicHttpServer != nil {
+		if err := publicHttpServer.Shutdown(ctx); err != nil {
+			app.Logger.Error(fmt.Sprintf("failed to close public server %v", err))
+		}
 	}
-	if err := internalHttpServer.Shutdown(ctx); err != nil {
-		app.Logger.Error(fmt.Sprintf("failed to close internal server %v", err))
+	if internalHttpServer != nil {
+		if err := internalHttpServer.Shutdown(ctx); err != nil {
+			app.Logger.Error(fmt.Sprintf("failed to close internal server %v", err))
+		}
 	}
 }
 
