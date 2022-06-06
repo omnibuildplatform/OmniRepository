@@ -17,8 +17,10 @@ worker = 5
 syncInterval = 5
 
 [persistentStore]
-dbHost = "192.168.1.193"
-dbUser = "root"
-dbPswd = "rootpswd"
-dbName = "omni_repository"
-dbPort = "3306"
+host = "192.168.1.193"
+user = "root"
+password = "rootpswd"
+dbname = "omni_repository"
+port = "3306"
+[mq]
+kafka_brokers = "192.168.1.193:9092"

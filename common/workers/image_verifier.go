@@ -7,14 +7,16 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/omnibuildplatform/omni-repository/common/models"
-	"github.com/omnibuildplatform/omni-repository/common/storage"
-	"go.uber.org/zap"
 	"hash"
 	"io"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/omnibuildplatform/omni-repository/app"
+	"github.com/omnibuildplatform/omni-repository/common/models"
+	"github.com/omnibuildplatform/omni-repository/common/storage"
+	"go.uber.org/zap"
 )
 
 const HashingBuffer = 1024 * 1024 * 10
@@ -97,6 +99,8 @@ func (r *ImageVerifier) DoWork(ctx context.Context) error {
 		r.cleanup(err)
 		return err
 	}
+	go app.PostDownloadStatusEvent(r.Image.ExternalID, string(models.ImageVerified), r.Image.ExternalComponent, 0, 0, "github.com/omnibuildplatform/omni-repository/common/workers/image_verifier")
+
 	r.Logger.Info(fmt.Sprintf("image %s successfully verified", r.Image.SourceUrl))
 	return nil
 }

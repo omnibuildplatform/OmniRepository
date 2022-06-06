@@ -8,6 +8,7 @@ type (
 		LogConfig    LogConfig       `mapstructure:"log"`
 		Store        PersistentStore `mapstructure:"persistentStore"`
 		WorkManager  WorkManager     `mapstructure:"workManager"`
+		MQ           MQ              `mapstructure:"mq"`
 	}
 
 	ServerConfig struct {
@@ -37,5 +38,9 @@ type (
 		User     string `mapstructure:"user"`
 		Password string `mapstructure:"password"`
 		DBName   string `mapstructure:"dbname"`
+	}
+
+	MQ struct {
+		KafkaBrokers string `mapstructure:"kafka_brokers"`
 	}
 )

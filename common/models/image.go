@@ -15,6 +15,14 @@ const (
 	ImageFailed      ImageStatus = "ImageFailed"
 )
 
+type ImageBlockStatus string
+
+const (
+	ImageBlockFinished ImageBlockStatus = "ImageBlockFinished"
+	ImageBlockFailed   ImageBlockStatus = "ImageBlockFailed"
+	ImageBlockCreated  ImageBlockStatus = "ImageBlockCreated"
+)
+
 type Image struct {
 	ID           int         `description:"id" gorm:"primaryKey"`
 	Name         string      `description:"name"`
@@ -31,6 +39,8 @@ type Image struct {
 	ChecksumPath string      `description:"image checksum store path"`
 	CreateTime   time.Time   `description:"create time"`
 	UpdateTime   time.Time   `description:"update time"`
+
+	ExternalComponent string `description:"eg. omni-manager , ....."`
 }
 
 func (Image) TableName() string {

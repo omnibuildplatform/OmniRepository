@@ -1,7 +1,7 @@
 name = "omni-repository"
 [server]
-publicHttpPort = 8080
-internalHttpPort = 8088
+publicHttpPort = 8101
+internalHttpPort = 8500
 dataFolder = "./data/"
 [log]
 logFile = "./logs/info-{date}.log"
@@ -12,8 +12,10 @@ uploadToken = "316462d0c029ba707ad1"
 worker = 5
 syncInterval = 10
 [persistentStore]
-host = "127.0.0.1"
+host = "192.168.1.193"
 user = "root"
-password = "password"
+password = "rootpswd"
 dbname = "omni_repository"
 port = "3306"
+[mq]
+kafka_brokers = "192.168.1.193:9092"

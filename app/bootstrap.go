@@ -2,14 +2,15 @@ package app
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gookit/color"
 	"github.com/gookit/config/v2"
 	"github.com/gookit/config/v2/dotnev"
 	"github.com/gookit/config/v2/toml"
 	appconfig "github.com/omnibuildplatform/omni-repository/common/config"
-	"os"
-	"path/filepath"
 )
 
 var (
