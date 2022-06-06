@@ -28,8 +28,9 @@ type (
 	}
 
 	WorkManager struct {
-		Worker       int `mapstructure:"worker"`
-		SyncInterval int `mapstructure:"syncInterval"`
+		SyncInterval int     `mapstructure:"syncInterval"`
+		Threads      int     `mapstructure:"threads"`
+		Workers      Workers `mapstructure:"workers"`
 	}
 
 	PersistentStore struct {
@@ -38,6 +39,28 @@ type (
 		User     string `mapstructure:"user"`
 		Password string `mapstructure:"password"`
 		DBName   string `mapstructure:"dbname"`
+	}
+
+	Workers struct {
+		ImagePusher   ImagePusher   `mapstructure:"imagerPusher"`
+		ImageVerifier ImageVerifier `mapstructure:"imageVerifier"`
+		ImagePuller   ImagePuller   `mapstructure:"imagerPuller"`
+	}
+
+	ImagePuller struct {
+		MaxRetry       int `mapstructure:"maxRetry"`
+		MaxConcurrency int `mapstructure:"maxConcurrency"`
+	}
+
+	ImageVerifier struct {
+	}
+
+	ImagePusher struct {
+		Endpoint string `mapstructure:"endpoint"`
+		AK       string `mapstructure:"ak"`
+		SK       string `mapstructure:"sk"`
+		Bucket   string `mapstructure:"bucket"`
+		PartSize int64  `mapstructure:"partSize"`
 	}
 
 	MQ struct {

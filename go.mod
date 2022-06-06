@@ -7,10 +7,10 @@ require (
 	github.com/cloudevents/sdk-go/protocol/kafka_sarama/v2 v2.10.0
 	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/gin-gonic/gin v1.7.7
-	github.com/go-playground/validator/v10 v10.4.1
 	github.com/gookit/color v1.5.0
 	github.com/gookit/config/v2 v2.1.0
 	github.com/gookit/goutil v0.5.1
+	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.21.12+incompatible
 	github.com/swaggo/swag v1.8.1
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.21.0
@@ -71,6 +71,8 @@ require (
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/tools v0.1.7 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
+	google.golang.org/grpc v1.46.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

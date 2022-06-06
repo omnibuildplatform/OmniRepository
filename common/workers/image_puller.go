@@ -5,6 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/gookit/goutil/fsutil"
+	"github.com/omnibuildplatform/omni-repository/app"
+	"github.com/omnibuildplatform/omni-repository/common/config"
+	"github.com/omnibuildplatform/omni-repository/common/models"
+	"github.com/omnibuildplatform/omni-repository/common/storage"
+	"go.uber.org/atomic"
+	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -15,13 +22,6 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
-	"github.com/gookit/goutil/fsutil"
-	"github.com/omnibuildplatform/omni-repository/app"
-	"github.com/omnibuildplatform/omni-repository/common/models"
-	"github.com/omnibuildplatform/omni-repository/common/storage"
-	"go.uber.org/atomic"
-	"go.uber.org/zap"
 )
 
 const MaxTempFileSize = 100 * 1024 * 1024
@@ -41,13 +41,14 @@ type ImagePuller struct {
 	Image        *models.Image
 	LocalFolder  string
 	Logger       *zap.Logger
-	Worker       int
 	Client       http.Client
 	BlockChannel chan SingleBlock
+	Config       config.ImagePuller
+	Worker       int
 	ImageSize    int
 }
 
-func NewImagePuller(imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int) *ImagePuller {
+func NewImagePuller(config config.ImagePuller, imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int) (*ImagePuller, error) {
 	client := http.Client{
 		Timeout: 60 * 20 * time.Second,
 	}
@@ -56,10 +57,11 @@ func NewImagePuller(imageStore *storage.ImageStorage, logger *zap.Logger, image 
 		Logger:       logger,
 		ImageStore:   imageStore,
 		Image:        image,
-		Worker:       worker,
+		Config:       config,
 		Client:       client,
 		BlockChannel: make(chan SingleBlock, 100),
-	}
+		Worker:       worker,
+	}, nil
 }
 
 func (r *ImagePuller) cleanup(err error) {

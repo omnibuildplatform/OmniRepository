@@ -39,7 +39,7 @@ type Image struct {
 	ChecksumPath string      `description:"image checksum store path"`
 	CreateTime   time.Time   `description:"create time"`
 	UpdateTime   time.Time   `description:"update time"`
-
+	Publish      bool        `description:"publish image to third party storage"`
 	ExternalComponent string `description:"eg. omni-manager , ....."`
 }
 

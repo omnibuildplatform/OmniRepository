@@ -9,8 +9,14 @@ errFile = "./logs/error-{date}.log"
 [repoManager]
 uploadToken = "316462d0c029ba707ad1"
 [workManager]
-worker = 5
-syncInterval = 10
+threads = 10
+syncInterval = 30
+    [workManager.workers.imagerPusher]
+        endpoint = "obs.ap-southeast-1.myhuaweicloud.com"
+        ak = ""
+        sk = ""
+        bucket = "omni-images-test"
+        partSize = 419430400
 [persistentStore]
 host = "192.168.1.193"
 user = "root"
