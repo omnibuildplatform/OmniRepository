@@ -57,6 +57,6 @@ func PostDownloadStatusEvent(externalID, eventType, subject string, blockSize in
 	})
 	err := cloudEventClient.Send(kafka_sarama.WithMessageKey(context.Background(), sarama.StringEncoder(e.ID())), e)
 	if err != nil {
-		log.Fatalf("failed to PostDownloadStatusEvent ,error: %v \n", err)
+		log.Printf("failed to PostDownloadStatusEvent ,error: %v \n", err)
 	}
 }
