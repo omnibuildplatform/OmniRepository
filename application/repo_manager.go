@@ -254,7 +254,7 @@ func (r *RepositoryManager) Load(c *gin.Context) {
 	image.ImagePath = path.Join(GetImageRelativeFolder(&image), image.FileName)
 	image.ChecksumPath = path.Join(GetImageRelativeFolder(&image),
 		fmt.Sprintf("%s.%ssum", image.Name, strings.ToLower(image.Algorithm)))
-	if existed, err := r.imageStore.GetImageByChecksumAndUserID(image.Checksum, strconv.Itoa(image.UserId)); err == nil {
+	if existed, err := r.imageStore.GetImageByChecksumAndUserID(strconv.Itoa(image.UserId), image.Checksum); err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"GetImageByChecksumAndUserID error": fmt.Sprintf("image has identical checksum already existed %s",
 			existed.FileName)})
 		return
