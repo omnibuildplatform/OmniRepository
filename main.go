@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/omnibuildplatform/omni-repository/common/messages"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/omnibuildplatform/omni-repository/common/messages"
 
 	"github.com/omnibuildplatform/omni-repository/common"
 

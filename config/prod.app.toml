@@ -1,7 +1,7 @@
 name = "omni_repository"
 [server]
-publicHttpPort = 8080
-internalHttpPort = 8088
+publicHttpPort = 8501
+internalHttpPort = 8500
 dataFolder = "./data/"
 serverName = "localhost:8080"
 [log]
@@ -21,9 +21,9 @@ syncInterval = 30
         bucket = ""
         partSize = 419430400
 [persistentStore]
-host = "127.0.0.1"
+host = "192.168.1.193"
 user = "root"
-password = "password"
+password = "rootpswd"
 dbname = "omni_repository"
 port = "3306"
 [mq]

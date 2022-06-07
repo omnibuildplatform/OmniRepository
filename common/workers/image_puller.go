@@ -4,13 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/gookit/goutil/fsutil"
-	"github.com/omnibuildplatform/omni-repository/common/config"
-	"github.com/omnibuildplatform/omni-repository/common/messages"
-	"github.com/omnibuildplatform/omni-repository/common/models"
-	"github.com/omnibuildplatform/omni-repository/common/storage"
-	"go.uber.org/atomic"
-	"go.uber.org/zap"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -21,6 +14,14 @@ import (
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/gookit/goutil/fsutil"
+	"github.com/omnibuildplatform/omni-repository/common/config"
+	"github.com/omnibuildplatform/omni-repository/common/messages"
+	"github.com/omnibuildplatform/omni-repository/common/models"
+	"github.com/omnibuildplatform/omni-repository/common/storage"
+	"go.uber.org/atomic"
+	"go.uber.org/zap"
 )
 
 const MaxTempFileSize = 100 * 1024 * 1024
