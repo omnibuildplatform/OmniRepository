@@ -42,9 +42,9 @@ func (i *ImageStorage) UpdateImageExternalPath(m *models.Image) (err error) {
 	return result.Error
 }
 
-func (i *ImageStorage) GetImageByChecksum(checksum string) (models.Image, error) {
+func (i *ImageStorage) GetImageByChecksumAndUserID(userID, checksum string) (models.Image, error) {
 	var image models.Image
-	result := i.db.WithContext(i.context).Where("checksum = ?", checksum).Order("create_time desc").First(&image)
+	result := i.db.WithContext(i.context).Where("checksum = ? AND user_id = ?", checksum, userID).Order("create_time desc").First(&image)
 	return image, result.Error
 }
 
