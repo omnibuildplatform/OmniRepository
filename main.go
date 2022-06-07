@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/omnibuildplatform/omni-repository/common/messages"
 	"os"
 	"os/signal"
 	"syscall"
@@ -25,6 +26,7 @@ var (
 	workManager   *application.WorkManager
 	store         *common.Store
 	globalContext *CancelContext
+	notifier      messages.Notifier
 	Tag           string //Git tag name, filled when generating binary
 	CommitID      string //Git commit ID, filled when generating binary
 	ReleaseAt     string //Publish date, filled when generating binary
@@ -59,12 +61,22 @@ func main() {
 	}
 	imageStore := store.GetImageStorage(globalContext.ctx)
 	app.Logger.Info("initialize database store successfully")
-	err = app.InitMQ()
-	if err != nil {
-		app.Logger.Error(fmt.Sprintf("failed to initialize message worker %v", err))
-		os.Exit(1)
+
+	if len(app.AppConfig.MQ.KafkaBrokers) == 0 {
+		notifier, err = messages.NewEchoNotifier(app.Logger)
+		if err != nil {
+			app.Logger.Error(fmt.Sprintf("failed to initialize echo message worker %v", err))
+			os.Exit(1)
+		}
+	} else {
+		notifier, err = messages.NewCloudEventNotifier(app.AppConfig.MQ, app.Logger)
+		if err != nil {
+			app.Logger.Error(fmt.Sprintf("failed to initialize cloudevent message worker %v", err))
+			os.Exit(1)
+		}
 	}
-	app.Logger.Info("initialize message hub successfully")
+
+	app.Logger.Info("initialize message worker successfully")
 	repoManager, err = application.NewRepositoryManager(
 		globalContext.ctx,
 		app.AppConfig.RepoManager,
@@ -87,7 +99,7 @@ func main() {
 		app.AppConfig.WorkManager,
 		app.Logger,
 		imageStore,
-		app.AppConfig.ServerConfig.DataFolder)
+		app.AppConfig.ServerConfig.DataFolder, notifier)
 	if err != nil {
 		app.Logger.Error(fmt.Sprintf("failed to start work manager %v", err))
 		os.Exit(1)
@@ -135,6 +147,9 @@ func handleSignals(c chan os.Signal) {
 	}
 	if store != nil {
 		store.Close()
+	}
+	if notifier != nil {
+		notifier.Close()
 	}
 	time.Sleep(3 * time.Second)
 	application.Close()

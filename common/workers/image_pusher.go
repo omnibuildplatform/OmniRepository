@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/huaweicloud/huaweicloud-sdk-go-obs/obs"
 	"github.com/omnibuildplatform/omni-repository/common/config"
+	"github.com/omnibuildplatform/omni-repository/common/messages"
 	"github.com/omnibuildplatform/omni-repository/common/models"
 	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"go.uber.org/zap"
@@ -24,9 +25,10 @@ type ImagePusher struct {
 	Config      config.ImagePusher
 	OBSClient   *obs.ObsClient
 	Worker      int
+	Notifier    messages.Notifier
 }
 
-func NewImagePusher(config config.ImagePusher, imageStore *storage.ImageStorage, image *models.Image, localFolder string, logger *zap.Logger, worker int) (*ImagePusher, error) {
+func NewImagePusher(config config.ImagePusher, imageStore *storage.ImageStorage, image *models.Image, localFolder string, logger *zap.Logger, worker int, notifier messages.Notifier) (*ImagePusher, error) {
 	if len(config.AK) == 0 || len(config.SK) == 0 || len(config.Endpoint) == 0 {
 		return nil, errors.New("incorrect ak/sk/endpoint config for image pusher")
 	}
@@ -50,6 +52,7 @@ func NewImagePusher(config config.ImagePusher, imageStore *storage.ImageStorage,
 		LocalFolder: localFolder,
 		OBSClient:   obsClient,
 		Worker:      worker,
+		Notifier:    notifier,
 	}, nil
 }
 
@@ -57,6 +60,9 @@ func (r *ImagePusher) cleanup(err error) {
 	r.Image.Status = models.ImageFailed
 	r.Image.StatusDetail = err.Error()
 	_ = r.imageStore.UpdateImageStatusAndDetail(r.Image)
+	r.Notifier.Info(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+		"detail": err.Error(),
+	})
 }
 
 func (r *ImagePusher) DoWork(ctx context.Context) error {
@@ -124,6 +130,10 @@ func (r *ImagePusher) DoWork(ctx context.Context) error {
 		r.cleanup(err)
 		return err
 	}
+	r.Notifier.Info(string(models.ImageEventPushed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+		"imagePath":    r.Image.ImagePath,
+		"checksumPath": r.Image.ChecksumPath,
+	})
 	return nil
 }
 

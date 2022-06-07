@@ -7,13 +7,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/omnibuildplatform/omni-repository/common/messages"
 	"hash"
 	"io"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/omnibuildplatform/omni-repository/app"
 	"github.com/omnibuildplatform/omni-repository/common/models"
 	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"go.uber.org/zap"
@@ -27,15 +27,17 @@ type ImageVerifier struct {
 	LocalFolder string
 	Logger      *zap.Logger
 	Worker      int
+	Notifier    messages.Notifier
 }
 
-func NewImageVerifier(imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int) (*ImageVerifier, error) {
+func NewImageVerifier(imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int, notifier messages.Notifier) (*ImageVerifier, error) {
 	return &ImageVerifier{
 		LocalFolder: localFolder,
 		Logger:      logger,
 		ImageStore:  imageStore,
 		Image:       image,
 		Worker:      worker,
+		Notifier:    notifier,
 	}, nil
 }
 
@@ -43,6 +45,9 @@ func (r *ImageVerifier) cleanup(err error) {
 	r.Image.Status = models.ImageFailed
 	r.Image.StatusDetail = err.Error()
 	_ = r.ImageStore.UpdateImageStatusAndDetail(r.Image)
+	r.Notifier.Info(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+		"detail": err.Error(),
+	})
 }
 
 func (r *ImageVerifier) getHasher(algorithm string) (hash.Hash, error) {
@@ -101,8 +106,9 @@ func (r *ImageVerifier) DoWork(ctx context.Context) error {
 		r.cleanup(err)
 		return err
 	}
-	go app.PostDownloadStatusEvent(r.Image.ExternalID, string(models.ImageVerified), r.Image.ExternalComponent, 0, 0, "github.com/omnibuildplatform/omni-repository/common/workers/image_verifier")
-
+	r.Notifier.Info(string(models.ImageEventVerified), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+		"checksum": checksum,
+	})
 	r.Logger.Info(fmt.Sprintf("image %s successfully verified", r.Image.SourceUrl))
 	return nil
 }
