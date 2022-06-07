@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"github.com/gookit/goutil/fsutil"
-	"github.com/omnibuildplatform/omni-repository/app"
 	"github.com/omnibuildplatform/omni-repository/common/config"
+	"github.com/omnibuildplatform/omni-repository/common/messages"
 	"github.com/omnibuildplatform/omni-repository/common/models"
 	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"go.uber.org/atomic"
@@ -45,9 +45,10 @@ type ImagePuller struct {
 	Config       config.ImagePuller
 	Worker       int
 	ImageSize    int
+	Notifier     messages.Notifier
 }
 
-func NewImagePuller(config config.ImagePuller, imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int) (*ImagePuller, error) {
+func NewImagePuller(config config.ImagePuller, imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int, notifier messages.Notifier) (*ImagePuller, error) {
 	client := http.Client{
 		Timeout: 60 * 20 * time.Second,
 	}
@@ -60,6 +61,7 @@ func NewImagePuller(config config.ImagePuller, imageStore *storage.ImageStorage,
 		Client:       client,
 		BlockChannel: make(chan SingleBlock, 100),
 		Worker:       worker,
+		Notifier:     notifier,
 	}, nil
 }
 
@@ -71,7 +73,9 @@ func (r *ImagePuller) cleanup(err error) {
 	_ = r.ImageStore.UpdateImageStatusAndDetail(r.Image)
 
 	//send failed message
-	go app.PostDownloadStatusEvent(r.Image.ExternalID, string(models.ImageBlockFailed), r.Image.ExternalComponent, 0, 0, "github.com/omnibuildplatform/omni-repository/common/workers/image_puller")
+	r.Notifier.NonBlockPush(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+		"detail": err.Error(),
+	})
 
 }
 
@@ -262,7 +266,10 @@ func (r *ImagePuller) startWorkerLoop(ctx context.Context, wg *sync.WaitGroup, t
 
 				}
 			} else {
-				go app.PostDownloadStatusEvent(r.Image.ExternalID, string(models.ImageBlockFinished), r.Image.ExternalComponent, (block.EndIndex - block.StartIndex + 1), (r.ImageSize), "github.com/omnibuildplatform/omni-repository/common/workers/image_puller")
+				r.Notifier.NonBlockPush(string(models.ImageEventDownloaded), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+					"blockSize": block.EndIndex - block.StartIndex + 1,
+					"imageSize": r.ImageSize,
+				})
 				totalBlocks.Sub(1)
 			}
 		}
