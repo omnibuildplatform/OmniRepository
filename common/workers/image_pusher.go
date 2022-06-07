@@ -60,7 +60,7 @@ func (r *ImagePusher) cleanup(err error) {
 	r.Image.Status = models.ImageFailed
 	r.Image.StatusDetail = err.Error()
 	_ = r.imageStore.UpdateImageStatusAndDetail(r.Image)
-	r.Notifier.Info(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+	r.Notifier.NonBlockPush(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
 		"detail": err.Error(),
 	})
 }
@@ -130,7 +130,7 @@ func (r *ImagePusher) DoWork(ctx context.Context) error {
 		r.cleanup(err)
 		return err
 	}
-	r.Notifier.Info(string(models.ImageEventPushed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+	r.Notifier.NonBlockPush(string(models.ImageEventPushed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
 		"imagePath":    r.Image.ImagePath,
 		"checksumPath": r.Image.ChecksumPath,
 	})

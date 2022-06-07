@@ -45,7 +45,7 @@ func (r *ImageVerifier) cleanup(err error) {
 	r.Image.Status = models.ImageFailed
 	r.Image.StatusDetail = err.Error()
 	_ = r.ImageStore.UpdateImageStatusAndDetail(r.Image)
-	r.Notifier.Info(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+	r.Notifier.NonBlockPush(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
 		"detail": err.Error(),
 	})
 }
@@ -106,7 +106,7 @@ func (r *ImageVerifier) DoWork(ctx context.Context) error {
 		r.cleanup(err)
 		return err
 	}
-	r.Notifier.Info(string(models.ImageEventVerified), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+	r.Notifier.NonBlockPush(string(models.ImageEventVerified), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
 		"checksum": checksum,
 	})
 	r.Logger.Info(fmt.Sprintf("image %s successfully verified", r.Image.SourceUrl))

@@ -72,7 +72,7 @@ func (r *ImagePuller) cleanup(err error) {
 	_ = r.ImageStore.UpdateImageStatusAndDetail(r.Image)
 
 	//send failed message
-	r.Notifier.Info(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+	r.Notifier.NonBlockPush(string(models.ImageEventFailed), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
 		"detail": err.Error(),
 	})
 
@@ -265,7 +265,7 @@ func (r *ImagePuller) startWorkerLoop(ctx context.Context, wg *sync.WaitGroup, t
 
 				}
 			} else {
-				r.Notifier.Info(string(models.ImageEventDownloaded), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
+				r.Notifier.NonBlockPush(string(models.ImageEventDownloaded), r.Image.ExternalComponent, r.Image.ExternalID, map[string]interface{}{
 					"blockSize": block.EndIndex - block.StartIndex + 1,
 					"imageSize": r.ImageSize,
 				})

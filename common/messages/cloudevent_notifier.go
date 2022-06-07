@@ -46,7 +46,7 @@ func NewCloudEventNotifier(config config.MQ, logger *zap.Logger) (Notifier, erro
 	}, nil
 }
 
-func (n *CloudEventNotifier) Info(eventType, externalComponent, externalID string, data map[string]interface{}) {
+func (n *CloudEventNotifier) NonBlockPush(eventType, externalComponent, externalID string, data map[string]interface{}) {
 	subject := fmt.Sprintf("%s.%s", externalComponent, externalID)
 	e := cloudevents.NewEvent()
 	e.SetSpecVersion(cloudevents.VersionV1)
@@ -54,11 +54,13 @@ func (n *CloudEventNotifier) Info(eventType, externalComponent, externalID strin
 	e.SetSubject(subject)
 	e.SetSource(SourceUrl)
 	_ = e.SetData(cloudevents.ApplicationJSON, data)
-	err := n.cloudEventClient.Send(kafka_sarama.WithMessageKey(context.Background(), sarama.StringEncoder(e.ID())), e)
-	if err != nil {
-		n.logger.Error(fmt.Sprintf("[CloudEventNotifier] failed to send message ,error: %v", err))
-	}
-	n.logger.Info(fmt.Sprintf("[CloudEventNotifier] message send with event type %s, subject %s data %v", eventType, subject, data))
+	go func() {
+		err := n.cloudEventClient.Send(kafka_sarama.WithMessageKey(context.Background(), sarama.StringEncoder(e.ID())), e)
+		if err != nil {
+			n.logger.Error(fmt.Sprintf("[CloudEventNotifier] failed to send message ,error: %v", err))
+		}
+		n.logger.Info(fmt.Sprintf("[CloudEventNotifier] message send with event type %s, subject %s data %v", eventType, subject, data))
+	}()
 }
 
 func (n *CloudEventNotifier) Close() {

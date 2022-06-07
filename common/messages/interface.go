@@ -7,6 +7,6 @@ type (
 
 	Notifier interface {
 		Closeable
-		Info(eventType, externalComponent, externalID string, data map[string]interface{})
+		NonBlockPush(eventType, externalComponent, externalID string, data map[string]interface{})
 	}
 )
