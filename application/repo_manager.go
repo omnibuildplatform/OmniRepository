@@ -74,6 +74,17 @@ func (r *RepositoryManager) Initialize() error {
 	return nil
 }
 
+// @BasePath /images/
+
+// Upload godoc
+// @Summary upload a image
+// @Param body body dtos.ImageRequest true "body for upload a image"
+// @Description Upload a image with specified parameter
+// @Tags Image
+// @Accept json
+// @Produce json
+// @Success 201 object models.Image
+// @Router /upload [post]
 func (r *RepositoryManager) Upload(c *gin.Context) {
 
 	var imageRequest dtos.ImageRequest
@@ -149,6 +160,17 @@ func (r *RepositoryManager) Close() {
 
 }
 
+// @BasePath /images/
+
+// Query godoc
+// @Summary query image by external ID
+// @Param externalID query  string	true	"externalID"
+// @Description Upload a image with specified parameter
+// @Tags Image
+// @Accept json
+// @Produce json
+// @Success 200 object models.Image
+// @Router /query [post]
 func (r *RepositoryManager) Query(c *gin.Context) {
 	var queryImageRequest dtos.QueryImageRequest
 
@@ -192,6 +214,17 @@ func (r *RepositoryManager) validCheckSum(checksum string, algorithm string) err
 	return errors.New(fmt.Sprintf("unsupported algorithm %s", algorithm))
 }
 
+// @BasePath /images/
+
+// Load godoc
+// @Summary create a image from external system
+// @Param body body dtos.ImageRequest true "body for upload a image"
+// @Description create a image with specified parameter, image will be downloaded via source url
+// @Tags Image
+// @Accept json
+// @Produce json
+// @Success 201 object models.Image
+// @Router /load [post]
 func (r *RepositoryManager) Load(c *gin.Context) {
 	var imageRequest dtos.ImageRequest
 

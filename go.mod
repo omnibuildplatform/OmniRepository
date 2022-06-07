@@ -12,6 +12,8 @@ require (
 	github.com/gookit/config/v2 v2.1.0
 	github.com/gookit/goutil v0.5.1
 	github.com/huaweicloud/huaweicloud-sdk-go-obs v3.21.12+incompatible
+	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
+	github.com/swaggo/gin-swagger v1.4.3
 	github.com/swaggo/swag v1.8.1
 	go.uber.org/atomic v1.7.0
 	go.uber.org/zap v1.21.0

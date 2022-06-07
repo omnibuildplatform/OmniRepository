@@ -1,7 +1,7 @@
 name = "omni-repository"
 [server]
-publicHttpPort = 8101
-internalHttpPort = 8500
+publicHttpPort = 8080
+internalHttpPort = 8088
 dataFolder = "./data/"
 [log]
 logFile = "./logs/info-{date}.log"
@@ -19,9 +19,9 @@ syncInterval = 30
         bucket = "omni-images-test"
         partSize = 419430400
 [persistentStore]
-host = "192.168.1.193"
+host = "127.0.0.1"
 user = "root"
-password = "rootpswd"
+password = "password"
 dbname = "omni_repository"
 port = "3306"
 [mq]
