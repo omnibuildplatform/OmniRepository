@@ -15,12 +15,14 @@ const (
 	ImageFailed      ImageStatus = "ImageFailed"
 )
 
-type ImageBlockStatus string
+type ImageEventType string
 
 const (
-	ImageBlockFinished ImageBlockStatus = "ImageBlockFinished"
-	ImageBlockFailed   ImageBlockStatus = "ImageBlockFailed"
-	ImageBlockCreated  ImageBlockStatus = "ImageBlockCreated"
+	ImageEventCreated    ImageEventType = "obp.omni_repository.image.created"
+	ImageEventDownloaded ImageEventType = "obp.omni_repository.image.downloaded"
+	ImageEventVerified   ImageEventType = "obp.omni_repository.image.verified"
+	ImageEventPushed     ImageEventType = "obp.omni_repository.image.pushed"
+	ImageEventFailed     ImageEventType = "obp.omni_repository.image.failed"
 )
 
 type Image struct {

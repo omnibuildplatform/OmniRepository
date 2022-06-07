@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/omnibuildplatform/omni-repository/common/config"
+	"github.com/omnibuildplatform/omni-repository/common/messages"
 	"github.com/omnibuildplatform/omni-repository/common/models"
 	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"github.com/omnibuildplatform/omni-repository/common/workers"
@@ -22,9 +23,10 @@ type WorkManager struct {
 	syncWorker    *workers.WorkFetcher
 	Context       context.Context
 	baseFolder    string
+	Notifier      messages.Notifier
 }
 
-func NewWorkManager(ctx context.Context, config config.WorkManager, logger *zap.Logger, imageStore *storage.ImageStorage, baseFolder string) (*WorkManager, error) {
+func NewWorkManager(ctx context.Context, config config.WorkManager, logger *zap.Logger, imageStore *storage.ImageStorage, baseFolder string, notifier messages.Notifier) (*WorkManager, error) {
 	workManager := WorkManager{
 		Config:        config,
 		Logger:        logger,
@@ -35,6 +37,7 @@ func NewWorkManager(ctx context.Context, config config.WorkManager, logger *zap.
 		closeCh:       make(chan struct{}, 1),
 		Context:       ctx,
 		baseFolder:    baseFolder,
+		Notifier:      notifier,
 	}
 	workFetcher, err := workers.NewWorkFetcher(imageStore, logger, workManager.PullChannel, workManager.VerifyChannel, workManager.PushChannel)
 	if err != nil {
@@ -45,15 +48,15 @@ func NewWorkManager(ctx context.Context, config config.WorkManager, logger *zap.
 }
 
 func (w *WorkManager) GetVerifyingImageWorker(image *models.Image, localFolder string, worker int) (*workers.ImageVerifier, error) {
-	return workers.NewImageVerifier(w.ImageStore, w.Logger, image, localFolder, worker)
+	return workers.NewImageVerifier(w.ImageStore, w.Logger, image, localFolder, worker, w.Notifier)
 }
 
 func (w *WorkManager) GetPushImageWorker(image *models.Image, localFolder string, worker int) (*workers.ImagePusher, error) {
-	return workers.NewImagePusher(w.Config.Workers.ImagePusher, w.ImageStore, image, localFolder, w.Logger, worker)
+	return workers.NewImagePusher(w.Config.Workers.ImagePusher, w.ImageStore, image, localFolder, w.Logger, worker, w.Notifier)
 }
 
 func (w *WorkManager) GetPullingImageWorker(image *models.Image, localFolder string, worker int) (*workers.ImagePuller, error) {
-	return workers.NewImagePuller(w.Config.Workers.ImagePuller, w.ImageStore, w.Logger, image, localFolder, worker)
+	return workers.NewImagePuller(w.Config.Workers.ImagePuller, w.ImageStore, w.Logger, image, localFolder, worker, w.Notifier)
 }
 
 func (w *WorkManager) Close() {
