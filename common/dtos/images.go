@@ -72,6 +72,8 @@ func (i *ImageDTO) GenerateResponseFromImage(image models.Image) ImageResponse {
 			SourceUrl:  image.SourceUrl,
 			FileName:   image.FileName,
 			UserId:     image.UserId,
+			Publish:    image.Publish,
+			ExternalComponent: image.ExternalComponent,
 		},
 		ID:           image.ID,
 		Status:       image.Status,
@@ -82,6 +84,9 @@ func (i *ImageDTO) GenerateResponseFromImage(image models.Image) ImageResponse {
 	if imageResponse.Status != models.ImagePushed {
 		imageResponse.ImagePath = fmt.Sprintf("%s/%s", strings.TrimRight(i.browsePrefix, "/"), strings.TrimLeft(image.ImagePath, "/"))
 		imageResponse.ChecksumPath = fmt.Sprintf("%s/%s", strings.TrimRight(i.browsePrefix, "/"), strings.TrimLeft(image.ChecksumPath, "/"))
+	} else {
+		imageResponse.ImagePath = image.ImagePath
+		imageResponse.ChecksumPath = image.ChecksumPath
 	}
 	return imageResponse
 }
