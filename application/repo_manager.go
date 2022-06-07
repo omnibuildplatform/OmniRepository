@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -37,7 +38,6 @@ type RepositoryManager struct {
 	dataFolder          string
 	publicRouterGroup   *gin.RouterGroup
 	internalRouterGroup *gin.RouterGroup
-	uploadToken         string
 	imageStore          *storage.ImageStorage
 	config              config.RepoManager
 	paraValidator       *validator.Validate
@@ -50,17 +50,11 @@ func NewRepositoryManager(ctx context.Context, config config.RepoManager, public
 		color.Error.Println("data folder %s not existed", baseFolder)
 		return nil, errors.New("data folder not existed")
 	}
-	token := config.UploadToken
-	if len(token) == 0 {
-		color.Error.Println("upload token is empty")
-		return nil, errors.New("upload token is empty")
-	}
 	return &RepositoryManager{
 		Context:             ctx,
 		dataFolder:          baseFolder,
 		publicRouterGroup:   publicRouterGroup,
 		internalRouterGroup: internalRouterGroup,
-		uploadToken:         token,
 		imageStore:          imageStore,
 		config:              config,
 		imageDto:            dtos.NewImageDTO(BROWSE_PREFIX),
@@ -81,6 +75,17 @@ func (r *RepositoryManager) Initialize() error {
 	return nil
 }
 
+// @BasePath /images/
+
+// Upload godoc
+// @Summary upload a image
+// @Param body body dtos.ImageRequest true "body for upload a image"
+// @Description Upload a image with specified parameter
+// @Tags Image
+// @Accept json
+// @Produce json
+// @Success 201 object models.Image
+// @Router /upload [post]
 func (r *RepositoryManager) Upload(c *gin.Context) {
 
 	var imageRequest dtos.ImageRequest
@@ -156,6 +161,17 @@ func (r *RepositoryManager) Close() {
 
 }
 
+// @BasePath /images/
+
+// Query godoc
+// @Summary query image by external ID
+// @Param externalID query  string	true	"externalID"
+// @Description Upload a image with specified parameter
+// @Tags Image
+// @Accept json
+// @Produce json
+// @Success 200 object models.Image
+// @Router /query [post]
 func (r *RepositoryManager) Query(c *gin.Context) {
 	var queryImageRequest dtos.QueryImageRequest
 
@@ -199,6 +215,17 @@ func (r *RepositoryManager) validCheckSum(checksum string, algorithm string) err
 	return errors.New(fmt.Sprintf("unsupported algorithm %s", algorithm))
 }
 
+// @BasePath /images/
+
+// Load godoc
+// @Summary create a image from external system
+// @Param body body dtos.ImageRequest true "body for upload a image"
+// @Description create a image with specified parameter, image will be downloaded via source url
+// @Tags Image
+// @Accept json
+// @Produce json
+// @Success 201 object models.Image
+// @Router /load [post]
 func (r *RepositoryManager) Load(c *gin.Context) {
 	var imageRequest dtos.ImageRequest
 
@@ -227,8 +254,8 @@ func (r *RepositoryManager) Load(c *gin.Context) {
 	image.ImagePath = path.Join(GetImageRelativeFolder(&image), image.FileName)
 	image.ChecksumPath = path.Join(GetImageRelativeFolder(&image),
 		fmt.Sprintf("%s.%ssum", image.Name, strings.ToLower(image.Algorithm)))
-	if existed, err := r.imageStore.GetImageByChecksum(image.Checksum); err == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"GetImageByChecksum error": fmt.Sprintf("image has identical checksum already existed %s",
+	if existed, err := r.imageStore.GetImageByChecksumAndUserID(image.Checksum, strconv.Itoa(image.UserId)); err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"GetImageByChecksumAndUserID error": fmt.Sprintf("image has identical checksum already existed %s",
 			existed.FileName)})
 		return
 	}

@@ -37,24 +37,28 @@ func InitServer() {
 			SkipPaths: skipPaths,
 		}))
 	}
+	AddRoutes(publicEngine)
 
 	internalEngine = gin.New()
 	if app.EnvName == app.EnvDev {
 		internalEngine.Use(gin.Logger(), gin.Recovery())
 	} else {
-		publicEngine.Use(gin.Logger())
+		internalEngine.Use(gin.Logger())
 	}
-	AddRoutes(publicEngine)
 }
 
 func Close() {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	if err := publicHttpServer.Shutdown(ctx); err != nil {
-		app.Logger.Error(fmt.Sprintf("failed to close public server %v", err))
+	if publicHttpServer != nil {
+		if err := publicHttpServer.Shutdown(ctx); err != nil {
+			app.Logger.Error(fmt.Sprintf("failed to close public server %v", err))
+		}
 	}
-	if err := internalHttpServer.Shutdown(ctx); err != nil {
-		app.Logger.Error(fmt.Sprintf("failed to close internal server %v", err))
+	if internalHttpServer != nil {
+		if err := internalHttpServer.Shutdown(ctx); err != nil {
+			app.Logger.Error(fmt.Sprintf("failed to close internal server %v", err))
+		}
 	}
 }
 

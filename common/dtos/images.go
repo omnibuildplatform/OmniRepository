@@ -17,6 +17,7 @@ type ImageRequest struct {
 	SourceUrl         string `description:"source url of images" json:"sourceUrl" form:"sourceUrl"`
 	FileName          string `description:"file name" form:"fileName" json:"fileName" validate:"required"`
 	UserId            int    `description:"user id" form:"userID" json:"userID" validate:"required"`
+	Publish           bool   `description:"publish image to third party storage" form:"publish" json:"publish" validate:"required"`
 	ExternalComponent string `description:"From APP" form:"externalComponent" json:"externalComponent" validate:"required"`
 }
 
@@ -55,28 +56,37 @@ func (i *ImageDTO) GetImageFromRequest(imageRequest ImageRequest) models.Image {
 		SourceUrl:         imageRequest.SourceUrl,
 		FileName:          imageRequest.FileName,
 		UserId:            imageRequest.UserId,
+		Publish:           imageRequest.Publish,
 		ExternalComponent: imageRequest.ExternalComponent,
 	}
 }
 
 func (i *ImageDTO) GenerateResponseFromImage(image models.Image) ImageResponse {
-	return ImageResponse{
+	imageResponse := ImageResponse{
 		ImageRequest: ImageRequest{
-			Name:       image.Name,
-			Desc:       image.Desc,
-			Checksum:   image.Checksum,
-			Algorithm:  image.Algorithm,
-			ExternalID: image.ExternalID,
-			SourceUrl:  image.SourceUrl,
-			FileName:   image.FileName,
-			UserId:     image.UserId,
+			Name:              image.Name,
+			Desc:              image.Desc,
+			Checksum:          image.Checksum,
+			Algorithm:         image.Algorithm,
+			ExternalID:        image.ExternalID,
+			SourceUrl:         image.SourceUrl,
+			FileName:          image.FileName,
+			UserId:            image.UserId,
+			Publish:           image.Publish,
+			ExternalComponent: image.ExternalComponent,
 		},
 		ID:           image.ID,
 		Status:       image.Status,
 		StatusDetail: image.StatusDetail,
-		ImagePath:    fmt.Sprintf("%s/%s", strings.TrimRight(i.browsePrefix, "/"), strings.TrimLeft(image.ImagePath, "/")),
-		ChecksumPath: fmt.Sprintf("%s/%s", strings.TrimRight(i.browsePrefix, "/"), strings.TrimLeft(image.ChecksumPath, "/")),
 		CreateTime:   image.CreateTime,
 		UpdateTime:   image.UpdateTime,
 	}
+	if imageResponse.Status != models.ImagePushed {
+		imageResponse.ImagePath = fmt.Sprintf("%s/%s", strings.TrimRight(i.browsePrefix, "/"), strings.TrimLeft(image.ImagePath, "/"))
+		imageResponse.ChecksumPath = fmt.Sprintf("%s/%s", strings.TrimRight(i.browsePrefix, "/"), strings.TrimLeft(image.ChecksumPath, "/"))
+	} else {
+		imageResponse.ImagePath = image.ImagePath
+		imageResponse.ChecksumPath = image.ChecksumPath
+	}
+	return imageResponse
 }

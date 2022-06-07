@@ -1,6 +1,5 @@
 package workers
 
-import "C"
 import (
 	"context"
 	"errors"
@@ -18,6 +17,7 @@ import (
 
 	"github.com/gookit/goutil/fsutil"
 	"github.com/omnibuildplatform/omni-repository/app"
+	"github.com/omnibuildplatform/omni-repository/common/config"
 	"github.com/omnibuildplatform/omni-repository/common/models"
 	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"go.uber.org/atomic"
@@ -26,7 +26,6 @@ import (
 
 const MaxTempFileSize = 100 * 1024 * 1024
 const TempFolder = ".temp"
-const MaxRetry = 3
 const UnReachableBlock = 100
 
 type SingleBlock struct {
@@ -41,13 +40,14 @@ type ImagePuller struct {
 	Image        *models.Image
 	LocalFolder  string
 	Logger       *zap.Logger
-	Worker       int
 	Client       http.Client
 	BlockChannel chan SingleBlock
+	Config       config.ImagePuller
+	Worker       int
 	ImageSize    int
 }
 
-func NewImagePuller(imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int) *ImagePuller {
+func NewImagePuller(config config.ImagePuller, imageStore *storage.ImageStorage, logger *zap.Logger, image *models.Image, localFolder string, worker int) (*ImagePuller, error) {
 	client := http.Client{
 		Timeout: 60 * 20 * time.Second,
 	}
@@ -56,10 +56,11 @@ func NewImagePuller(imageStore *storage.ImageStorage, logger *zap.Logger, image 
 		Logger:       logger,
 		ImageStore:   imageStore,
 		Image:        image,
-		Worker:       worker,
+		Config:       config,
 		Client:       client,
 		BlockChannel: make(chan SingleBlock, 100),
-	}
+		Worker:       worker,
+	}, nil
 }
 
 func (r *ImagePuller) cleanup(err error) {
@@ -249,7 +250,7 @@ func (r *ImagePuller) startWorkerLoop(ctx context.Context, wg *sync.WaitGroup, t
 			if err != nil {
 				r.Logger.Error(fmt.Sprintf("Failed to download block %s [%d, %d] for image %s, error %v",
 					block.Index, block.StartIndex, block.EndIndex, r.Image.Name, err))
-				if block.RetryCount <= MaxRetry {
+				if block.RetryCount <= r.Config.MaxRetry {
 					r.Logger.Info(fmt.Sprintf("block %s [%d, %d] for image %s will have another try",
 						block.Index, block.StartIndex, block.EndIndex, r.Image.Name))
 					block.RetryCount += 1
