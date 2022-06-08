@@ -141,7 +141,7 @@ func (r *ImagePuller) DoWork(ctx context.Context) error {
 }
 
 func (r *ImagePuller) ConstructImageFile() error {
-	imagePath := path.Join(r.LocalFolder, r.Image.Name)
+	imagePath := path.Join(r.LocalFolder, r.Image.FileName)
 	os.Remove(imagePath)
 	out, err := os.OpenFile(imagePath, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -249,19 +249,19 @@ func (r *ImagePuller) startWorkerLoop(ctx context.Context, wg *sync.WaitGroup, t
 				return
 			}
 			r.Logger.Info(fmt.Sprintf("starting to download block %s [%d, %d] for image %s",
-				block.Index, block.StartIndex, block.EndIndex, r.Image.Name))
+				block.Index, block.StartIndex, block.EndIndex, r.Image.FileName))
 			err := r.fetchSingleBlock(ctx, block)
 			if err != nil {
 				r.Logger.Error(fmt.Sprintf("Failed to download block %s [%d, %d] for image %s, error %v",
-					block.Index, block.StartIndex, block.EndIndex, r.Image.Name, err))
+					block.Index, block.StartIndex, block.EndIndex, r.Image.FileName, err))
 				if block.RetryCount <= r.Config.MaxRetry {
 					r.Logger.Info(fmt.Sprintf("block %s [%d, %d] for image %s will have another try",
-						block.Index, block.StartIndex, block.EndIndex, r.Image.Name))
+						block.Index, block.StartIndex, block.EndIndex, r.Image.FileName))
 					block.RetryCount += 1
 					r.BlockChannel <- block
 				} else {
 					r.Logger.Error(fmt.Sprintf("block %s [%d, %d] for image %s will reaches max retry. failed, error %v",
-						block.Index, block.StartIndex, block.EndIndex, r.Image.Name, err))
+						block.Index, block.StartIndex, block.EndIndex, r.Image.FileName, err))
 					totalBlocks.Sub(1)
 
 				}
@@ -281,13 +281,13 @@ func (r *ImagePuller) fetchSingleBlock(ctx context.Context, block SingleBlock) e
 	if fileInfo, err := os.Stat(fileName); err == nil {
 		if fileInfo.Size() == block.EndIndex-block.StartIndex+1 {
 			r.Logger.Info(fmt.Sprintf("block %s [%d, %d] for image %s already exists, skip downloading",
-				block.Index, block.StartIndex, block.EndIndex, r.Image.Name))
+				block.Index, block.StartIndex, block.EndIndex, r.Image.FileName))
 			return nil
 		}
 	}
 	//delete it anyway
 	r.Logger.Info(fmt.Sprintf("block %s [%d, %d] for image %s will be deleted due to block size mismatch",
-		block.Index, block.StartIndex, block.EndIndex, r.Image.Name))
+		block.Index, block.StartIndex, block.EndIndex, r.Image.FileName))
 	os.Remove(fileName)
 	request, err := http.NewRequest("GET", r.Image.SourceUrl, nil)
 	if err != nil {
@@ -315,11 +315,11 @@ func (r *ImagePuller) fetchSingleBlock(ctx context.Context, block SingleBlock) e
 		if info.Size() != block.EndIndex-block.StartIndex+1 {
 			return errors.New(fmt.Sprintf(
 				"block %s [%d, %d] for image %s actually size %d not equal to request size %d",
-				block.Index, block.StartIndex, block.EndIndex, r.Image.Name, info.Size(),
+				block.Index, block.StartIndex, block.EndIndex, r.Image.FileName, info.Size(),
 				block.EndIndex-block.StartIndex+1))
 		}
 	}
 	r.Logger.Info(fmt.Sprintf("block %s [%d, %d] for image %s has been successfully created",
-		block.Index, block.StartIndex, block.EndIndex, r.Image.Name))
+		block.Index, block.StartIndex, block.EndIndex, r.Image.FileName))
 	return nil
 }

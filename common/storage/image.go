@@ -2,9 +2,10 @@ package storage
 
 import (
 	"context"
+	"time"
+
 	"github.com/omnibuildplatform/omni-repository/common/models"
 	"gorm.io/gorm"
-	"time"
 )
 
 type ImageStorage struct {

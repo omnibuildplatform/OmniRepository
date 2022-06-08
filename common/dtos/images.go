@@ -17,7 +17,7 @@ type ImageRequest struct {
 	SourceUrl         string `description:"source url of images" json:"sourceUrl" form:"sourceUrl"`
 	FileName          string `description:"file name" form:"fileName" json:"fileName" validate:"required"`
 	UserId            int    `description:"user id" form:"userID" json:"userID" validate:"required"`
-	Publish           bool   `description:"publish image to third party storage" form:"publish" json:"publish" validate:"required"`
+	Publish           bool   `description:"publish image to third party storage" form:"publish" json:"publish"  `
 	ExternalComponent string `description:"From APP" form:"externalComponent" json:"externalComponent" validate:"required"`
 }
 
