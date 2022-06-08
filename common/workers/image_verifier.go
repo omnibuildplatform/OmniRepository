@@ -7,12 +7,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/omnibuildplatform/omni-repository/common/messages"
 	"hash"
 	"io"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/omnibuildplatform/omni-repository/common/messages"
 
 	"github.com/omnibuildplatform/omni-repository/common/models"
 	"github.com/omnibuildplatform/omni-repository/common/storage"
@@ -121,7 +122,7 @@ func (r *ImageVerifier) generateChecksumFile(checksum string) error {
 		return err
 	}
 	defer checksumWriter.Close()
-	_, err = checksumWriter.Write([]byte(fmt.Sprintf("%s %s", checksum, r.Image.Name)))
+	_, err = checksumWriter.Write([]byte(fmt.Sprintf("%s %s", checksum, r.Image.FileName)))
 	if err != nil {
 		return err
 	}
