@@ -111,7 +111,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	}
 	image.ImagePath = path.Join(GetImageRelativeFolder(&image), image.FileName)
 	image.ChecksumPath = path.Join(GetImageRelativeFolder(&image),
-		fmt.Sprintf("%s.%ssum", image.Name, strings.ToLower(image.Algorithm)))
+		fmt.Sprintf("%s.%ssum", image.FileName, strings.ToLower(image.Algorithm)))
 	image.Status = models.ImageDownloaded
 	err = r.imageStore.AddImage(&image)
 	if err != nil {

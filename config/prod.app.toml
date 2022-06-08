@@ -1,7 +1,7 @@
 name = "omni_repository"
 [server]
-publicHttpPort = 8501
-internalHttpPort = 8500
+publicHttpPort = 8080
+internalHttpPort = 8088
 dataFolder = "./data/"
 serverName = "localhost:8080"
 [log]
@@ -27,4 +27,4 @@ password = "rootpswd"
 dbname = "omni_repository"
 port = "3306"
 [mq]
-kafka_brokers = "192.168.1.193:9092"
+kafka_brokers = "omni-message-kafka.omni-message.svc.cluster.local:9092"
