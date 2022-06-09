@@ -74,8 +74,8 @@ definitions:
 info:
   contact: {}
 paths:
-  /delete:
-    post:
+  /:
+    delete:
       consumes:
       - application/json
       description: deletes an image by user ID and checksum
@@ -124,7 +124,7 @@ paths:
       tags:
       - Image
   /query:
-    post:
+    get:
       consumes:
       - application/json
       description: Upload a image with specified parameter

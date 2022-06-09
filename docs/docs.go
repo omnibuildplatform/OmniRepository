@@ -16,8 +16,8 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/delete": {
-            "post": {
+        "/": {
+            "delete": {
                 "description": "deletes an image by user ID and checksum",
                 "consumes": [
                     "application/json"
@@ -90,7 +90,7 @@ const docTemplate = `{
             }
         },
         "/query": {
-            "post": {
+            "get": {
                 "description": "Upload a image with specified parameter",
                 "consumes": [
                     "application/json"

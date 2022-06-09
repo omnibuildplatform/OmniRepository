@@ -171,9 +171,8 @@ func (r *ImagePuller) ConstructImageFile() error {
 	return err
 }
 
-func (r *ImagePuller) Close() error {
+func (r *ImagePuller) Close() {
 	close(r.BlockChannel)
-	return nil
 }
 
 func (r *ImagePuller) downloadPrepare(ctx context.Context, wg *sync.WaitGroup) (int, error) {
