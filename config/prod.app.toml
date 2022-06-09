@@ -1,7 +1,7 @@
 name = "omni_repository"
 [server]
-publicHttpPort = 8080
-internalHttpPort = 8088
+publicHttpPort = 8501
+internalHttpPort = 8500
 dataFolder = "./data/"
 serverName = "localhost:8080"
 [log]

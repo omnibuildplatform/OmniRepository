@@ -1,7 +1,7 @@
 name = "omni-repository"
 [server]
-publicHttpPort = 8080
-internalHttpPort = 8088
+publicHttpPort = 8501
+internalHttpPort = 8500
 dataFolder = "./data/"
 [log]
 logFile = "/app/logs/run-application-{date}.log"

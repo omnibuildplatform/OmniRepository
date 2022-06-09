@@ -10,8 +10,8 @@ import (
 
 type ImageRequest struct {
 	Name              string `description:"name"  form:"name" json:"name" validate:"required"`
-	Desc              string `description:"desc"  form:"desc" json:"desc" validate:"required"`
-	Checksum          string `description:"checksum" form:"checksum" json:"checksum" validate:"required"`
+	Desc              string `description:"desc"  form:"desc" json:"desc"`
+	Checksum          string `description:"checksum" form:"checksum" json:"checksum"`
 	Algorithm         string `description:"algorithm" form:"algorithm" json:"algorithm" validate:"required,oneof=md5 sha256"`
 	ExternalID        string `description:"externalID" form:"externalID" json:"externalID" validate:"required"`
 	SourceUrl         string `description:"source url of images" json:"sourceUrl" form:"sourceUrl"`
@@ -34,6 +34,11 @@ type ImageResponse struct {
 
 type QueryImageRequest struct {
 	ExternalID string `form:"externalID" json:"externalID" validate:"required"`
+}
+
+type DeleteImageRequest struct {
+	UserID   string `form:"userID" json:"userID" validate:"required"`
+	Checksum string `form:"checksum" json:"checksum" validate:"required"`
 }
 
 type ImageDTO struct {

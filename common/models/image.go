@@ -43,6 +43,7 @@ type Image struct {
 	UpdateTime        time.Time   `description:"update time"`
 	Publish           bool        `description:"publish image to third party storage"`
 	ExternalComponent string      `description:"eg. omni-manager , ....."`
+	Deleted           bool        `description:"whether image has been deleted"`
 }
 
 func (Image) TableName() string {
