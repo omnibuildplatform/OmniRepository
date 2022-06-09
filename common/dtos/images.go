@@ -36,6 +36,11 @@ type QueryImageRequest struct {
 	ExternalID string `form:"externalID" json:"externalID" validate:"required"`
 }
 
+type DeleteImageRequest struct {
+	UserID   string `form:"userID" json:"userID" validate:"required"`
+	Checksum string `form:"checksum" json:"checksum" validate:"required"`
+}
+
 type ImageDTO struct {
 	browsePrefix string
 }

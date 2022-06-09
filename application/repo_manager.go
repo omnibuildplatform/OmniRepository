@@ -72,6 +72,7 @@ func (r *RepositoryManager) Initialize() error {
 	r.internalRouterGroup.GET("/images/query", r.Query)
 	r.internalRouterGroup.POST("/images/upload", r.Upload)
 	r.internalRouterGroup.POST("/images/load", r.Load)
+	r.internalRouterGroup.DELETE("/images", r.Delete)
 	return nil
 }
 
@@ -265,5 +266,46 @@ func (r *RepositoryManager) Load(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, image)
+
+}
+
+// @BasePath /images/
+
+// Delete godoc
+// @Summary delete an image by user ID and checksum
+// @Param userID query  string	true	"userID"
+// @Param checksum query  string	true	"checksum"
+// @Description deletes an image by user ID and checksum
+// @Tags Image
+// @Accept json
+// @Produce json
+// @Success 200 object models.Image
+// @Router /delete [post]
+func (r *RepositoryManager) Delete(c *gin.Context) {
+	var deleteImageRequest dtos.DeleteImageRequest
+
+	var err error
+	if err = c.ShouldBindJSON(&deleteImageRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"ShouldBindJSON error": err.Error()})
+		return
+	}
+	err = r.paraValidator.Struct(deleteImageRequest)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"paraValidator error": err.Error()})
+		return
+	}
+
+	image, err := r.imageStore.GetImageByChecksumAndUserID(deleteImageRequest.UserID, deleteImageRequest.Checksum)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"unable to get image": err.Error()})
+		return
+	}
+
+	err = r.imageStore.SoftDeleteImage(&image)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"failed to soft delete image": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, image)
 
 }

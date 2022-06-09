@@ -26,6 +26,14 @@ func (i *ImageStorage) AddImage(m *models.Image) (err error) {
 	result := i.db.WithContext(i.context).Model(m).Create(m)
 	return result.Error
 }
+
+func (i *ImageStorage) SoftDeleteImage(m *models.Image) (err error) {
+	m.UpdateTime = time.Now()
+	m.Deleted = true
+	result := i.db.WithContext(i.context).Model(m).Select("deleted", "update_time").Updates(m)
+	return result.Error
+}
+
 func (i *ImageStorage) UpdateImage(m *models.Image) (err error) {
 	m.UpdateTime = time.Now()
 	result := i.db.WithContext(i.context).Updates(m)
@@ -45,7 +53,7 @@ func (i *ImageStorage) UpdateImageExternalPath(m *models.Image) (err error) {
 
 func (i *ImageStorage) GetImageByChecksumAndUserID(userID, checksum string) (models.Image, error) {
 	var image models.Image
-	result := i.db.WithContext(i.context).Where("checksum = ? AND user_id = ?", checksum, userID).Order("create_time desc").First(&image)
+	result := i.db.WithContext(i.context).Where("checksum = ? AND user_id = ? AND deleted = ?", checksum, userID, false).Order("create_time desc").First(&image)
 	return image, result.Error
 }
 
@@ -57,54 +65,54 @@ func (i *ImageStorage) UpdateImageStatusAndDetail(m *models.Image) error {
 
 func (i *ImageStorage) GetImageByID(id int) (models.Image, error) {
 	var image models.Image
-	result := i.db.WithContext(i.context).First(&image, id)
+	result := i.db.WithContext(i.context).Where("deleted = ?", false).First(&image, id)
 	return image, result.Error
 }
 
 func (i *ImageStorage) GetImagesByStatus(status models.ImageStatus, limit int) ([]models.Image, error) {
 	var images []models.Image
-	result := i.db.WithContext(i.context).Where("status = ?", status).Order("create_time desc").Limit(limit).Find(&images)
+	result := i.db.WithContext(i.context).Where("status = ? AND deleted = ? ", status, false).Order("create_time desc").Limit(limit).Find(&images)
 	return images, result.Error
 }
 
 func (i *ImageStorage) GetImageForDownload(limit int) ([]models.Image, error) {
 	var images []models.Image
-	result := i.db.WithContext(i.context).Where("status = ? AND source_url != ''", models.ImageCreated).Order("create_time desc").Limit(limit).Find(&images)
+	result := i.db.WithContext(i.context).Where("status = ? AND source_url != '' AND deleted = ?", models.ImageCreated, false).Order("create_time desc").Limit(limit).Find(&images)
 	return images, result.Error
 }
 
 func (i *ImageStorage) GetDownloadingImages() ([]models.Image, error) {
 	var images []models.Image
-	result := i.db.WithContext(i.context).Where("status = ?", models.ImageDownloading).Order("create_time desc").Find(&images)
+	result := i.db.WithContext(i.context).Where("status = ? AND deleted = ?", models.ImageDownloading, false).Order("create_time desc").Find(&images)
 	return images, result.Error
 }
 
 func (i *ImageStorage) GetPushingImages() ([]models.Image, error) {
 	var images []models.Image
-	result := i.db.WithContext(i.context).Where("status = ?", models.ImagePushing).Order("create_time desc").Find(&images)
+	result := i.db.WithContext(i.context).Where("status = ? AND deleted = ?", models.ImagePushing, false).Order("create_time desc").Find(&images)
 	return images, result.Error
 }
 
 func (i *ImageStorage) GetImageForVerify(limit int) ([]models.Image, error) {
 	var images []models.Image
-	result := i.db.WithContext(i.context).Where("status = ?", models.ImageDownloaded).Order("create_time desc").Limit(limit).Find(&images)
+	result := i.db.WithContext(i.context).Where("status = ? AND deleted = ?", models.ImageDownloaded, false).Order("create_time desc").Limit(limit).Find(&images)
 	return images, result.Error
 }
 
 func (i *ImageStorage) GetImageForPush(limit int) ([]models.Image, error) {
 	var images []models.Image
-	result := i.db.WithContext(i.context).Where("status = ? AND publish = ?", models.ImageVerified, true).Order("create_time desc").Limit(limit).Find(&images)
+	result := i.db.WithContext(i.context).Where("status = ? AND publish = ? AND deleted = ?", models.ImageVerified, true, false).Order("create_time desc").Limit(limit).Find(&images)
 	return images, result.Error
 }
 
 func (i *ImageStorage) GetImagesByUserID(userid, offset, limit int) ([]models.Image, error) {
 	var images []models.Image
-	result := i.db.WithContext(i.context).Where("user_id = ?", userid).Order("create_time desc").Limit(limit).Find(&images)
+	result := i.db.WithContext(i.context).Where("user_id = ? AND deleted = ?", userid, false).Order("create_time desc").Limit(limit).Find(&images)
 	return images, result.Error
 }
 func (i *ImageStorage) GetImageByExternalID(externalID string) (models.Image, error) {
 	var image models.Image
-	result := i.db.WithContext(i.context).Where("external_id = ?", externalID).First(&image)
+	result := i.db.WithContext(i.context).Where("external_id = ? AND deleted = ? ", externalID, false).First(&image)
 	return image, result.Error
 }
 
