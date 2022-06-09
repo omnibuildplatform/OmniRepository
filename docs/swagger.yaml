@@ -32,7 +32,6 @@ definitions:
     - externalID
     - fileName
     - name
-    - publish
     - userID
     type: object
   models.Image:
@@ -45,6 +44,8 @@ definitions:
         type: string
       createTime:
         type: string
+      deleted:
+        type: boolean
       desc:
         type: string
       externalComponent:
@@ -75,6 +76,32 @@ definitions:
 info:
   contact: {}
 paths:
+  /delete:
+    post:
+      consumes:
+      - application/json
+      description: deletes an image by user ID and checksum
+      parameters:
+      - description: userID
+        in: query
+        name: userID
+        required: true
+        type: string
+      - description: checksum
+        in: query
+        name: checksum
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Image'
+      summary: delete an image by user ID and checksum
+      tags:
+      - Image
   /load:
     post:
       consumes:

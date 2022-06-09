@@ -16,6 +16,45 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/delete": {
+            "post": {
+                "description": "deletes an image by user ID and checksum",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Image"
+                ],
+                "summary": "delete an image by user ID and checksum",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "userID",
+                        "name": "userID",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "checksum",
+                        "name": "checksum",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Image"
+                        }
+                    }
+                }
+            }
+        },
         "/load": {
             "post": {
                 "description": "create a image with specified parameter, image will be downloaded via source url",
@@ -128,7 +167,6 @@ const docTemplate = `{
                 "externalID",
                 "fileName",
                 "name",
-                "publish",
                 "userID"
             ],
             "properties": {
@@ -182,6 +220,9 @@ const docTemplate = `{
                 },
                 "createTime": {
                     "type": "string"
+                },
+                "deleted": {
+                    "type": "boolean"
                 },
                 "desc": {
                     "type": "string"
