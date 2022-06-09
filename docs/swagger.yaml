@@ -26,8 +26,6 @@ definitions:
         type: integer
     required:
     - algorithm
-    - checksum
-    - desc
     - externalComponent
     - externalID
     - fileName

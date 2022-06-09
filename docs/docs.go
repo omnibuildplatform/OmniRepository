@@ -161,8 +161,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "algorithm",
-                "checksum",
-                "desc",
                 "externalComponent",
                 "externalID",
                 "fileName",
