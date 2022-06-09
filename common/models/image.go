@@ -23,6 +23,7 @@ const (
 	ImageEventVerified   ImageEventType = "obp.omni_repository.image.verified"
 	ImageEventPushed     ImageEventType = "obp.omni_repository.image.pushed"
 	ImageEventFailed     ImageEventType = "obp.omni_repository.image.failed"
+	ImageEventCleaned    ImageEventType = "obp.omni_repository.image.cleaned"
 )
 
 type Image struct {
