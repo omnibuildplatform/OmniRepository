@@ -191,7 +191,6 @@ func (r *RepositoryManager) Close() {
 // @Router /query [post]
 func (r *RepositoryManager) Query(c *gin.Context) {
 	var queryImageRequest dtos.QueryImageRequest
-
 	var err error
 	if err = c.ShouldBindQuery(&queryImageRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
