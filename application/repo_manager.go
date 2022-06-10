@@ -128,7 +128,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	}
 	image.ImagePath = path.Join(GetImageRelativeFolder(&image), image.FileName)
 	image.ChecksumPath = path.Join(GetImageRelativeFolder(&image),
-		fmt.Sprintf("%s.%ssum", image.Name, strings.ToLower(image.Algorithm)))
+		fmt.Sprintf("%s.%ssum", image.FileName, strings.ToLower(image.Algorithm)))
 	image.Status = models.ImageDownloaded
 	err = r.imageStore.AddImage(&image)
 	if err != nil {
@@ -191,7 +191,6 @@ func (r *RepositoryManager) Close() {
 // @Router /query [get]
 func (r *RepositoryManager) Query(c *gin.Context) {
 	var queryImageRequest dtos.QueryImageRequest
-
 	var err error
 	if err = c.ShouldBindQuery(&queryImageRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -270,7 +269,7 @@ func (r *RepositoryManager) Load(c *gin.Context) {
 	//calculate image relative path
 	image.ImagePath = path.Join(GetImageRelativeFolder(&image), image.FileName)
 	image.ChecksumPath = path.Join(GetImageRelativeFolder(&image),
-		fmt.Sprintf("%s.%ssum", image.Name, strings.ToLower(image.Algorithm)))
+		fmt.Sprintf("%s.%ssum", image.FileName, strings.ToLower(image.Algorithm)))
 	if existed, err := r.imageStore.GetImageByChecksumAndUserID(strconv.Itoa(image.UserId), image.Checksum); err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"GetImageByChecksumAndUserID error": fmt.Sprintf("image has identical checksum already existed %s",
 			existed.FileName)})
@@ -313,7 +312,7 @@ func (r *RepositoryManager) Delete(c *gin.Context) {
 
 	image, err := r.imageStore.GetImageByChecksumAndUserID(deleteImageRequest.UserID, deleteImageRequest.Checksum)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"unable to get image": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"unable to get image": err.Error()})
 		return
 	}
 
