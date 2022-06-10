@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/omnibuildplatform/omni-repository/common/config"
 	"github.com/omnibuildplatform/omni-repository/common/messages"
@@ -16,9 +17,7 @@ type WorkManager struct {
 	Config        config.WorkManager
 	Logger        *zap.Logger
 	ImageStore    *storage.ImageStorage
-	PullChannel   chan models.Image
-	VerifyChannel chan models.Image
-	PushChannel   chan models.Image
+	WorkerChannel chan workers.ImageWork
 	closeCh       chan struct{}
 	syncWorker    *workers.WorkFetcher
 	Context       context.Context
@@ -31,15 +30,13 @@ func NewWorkManager(ctx context.Context, config config.WorkManager, logger *zap.
 		Config:        config,
 		Logger:        logger,
 		ImageStore:    imageStore,
-		PullChannel:   make(chan models.Image, config.Threads),
-		VerifyChannel: make(chan models.Image, config.Threads),
-		PushChannel:   make(chan models.Image, config.Threads),
+		WorkerChannel: make(chan workers.ImageWork, config.Threads*4),
 		closeCh:       make(chan struct{}, 1),
 		Context:       ctx,
 		baseFolder:    baseFolder,
 		Notifier:      notifier,
 	}
-	workFetcher, err := workers.NewWorkFetcher(imageStore, logger, workManager.PullChannel, workManager.VerifyChannel, workManager.PushChannel)
+	workFetcher, err := workers.NewWorkFetcher(imageStore, logger, workManager.WorkerChannel)
 	if err != nil {
 		return nil, err
 	}
@@ -83,45 +80,42 @@ func (w *WorkManager) StartLoop() {
 	}
 }
 
+func (w *WorkManager) GetImageWorker(work workers.ImageWork) (workers.Worker, error) {
+	if work.Type == workers.PullImageWork {
+		w.Logger.Info(fmt.Sprintf("start to perform image download work for image %d", work.Image.ID))
+		return workers.NewImagePuller(
+			w.Config.Workers.ImagePuller,
+			w.ImageStore, w.Logger, &work.Image,
+			w.baseFolder, w.Config.Threads, w.Notifier)
+	} else if work.Type == workers.PushImageWork {
+		w.Logger.Info(fmt.Sprintf("start to perform image push work for image %d", work.Image.ID))
+		return workers.NewImagePusher(
+			w.Config.Workers.ImagePusher,
+			w.ImageStore, &work.Image, w.baseFolder,
+			w.Logger, w.Config.Threads, w.Notifier)
+	} else if work.Type == workers.SignImageWork {
+		w.Logger.Info(fmt.Sprintf(
+			"start to perform image verify work for image %d", work.Image.ID))
+		return workers.NewImageVerifier(w.ImageStore, w.Logger,
+			&work.Image, w.baseFolder, w.Config.Threads, w.Notifier)
+	} else if work.Type == workers.CleanImageWork {
+		return workers.NewImageCleaner(w.ImageStore, w.Logger, &work.Image, w.baseFolder, w.Notifier)
+	}
+	return nil, errors.New("unsupported image work")
+}
+
 func (w *WorkManager) PerformImageWorks() {
 	for {
 		select {
-		case image, ok := <-w.PullChannel:
+		case work, ok := <-w.WorkerChannel:
 			if ok {
-				w.Logger.Info(fmt.Sprintf("start to perform image download work for image %d", image.ID))
-				worker, err := w.GetPullingImageWorker(&image, w.baseFolder, w.Config.Threads)
+				worker, err := w.GetImageWorker(work)
 				if err != nil {
-					w.Logger.Error(fmt.Sprintf("failed to get image puller worker %v", err))
+					w.Logger.Error(fmt.Sprintf("failed to get image worker %v", err))
 				} else {
 					err := worker.DoWork(w.Context)
 					if err != nil {
-						w.Logger.Error(fmt.Sprintf("failed to perform image download work %v", err))
-					}
-				}
-			}
-		case image, ok := <-w.VerifyChannel:
-			if ok {
-				w.Logger.Info(fmt.Sprintf("start to perform image verify work for image %d", image.ID))
-				worker, err := w.GetVerifyingImageWorker(&image, w.baseFolder, w.Config.Threads)
-				if err != nil {
-					w.Logger.Error(fmt.Sprintf("failed to get image sign worker %v", err))
-				} else {
-					err := worker.DoWork(w.Context)
-					if err != nil {
-						w.Logger.Error(fmt.Sprintf("failed to perform image verify work %v", err))
-					}
-				}
-			}
-		case image, ok := <-w.PushChannel:
-			if ok {
-				w.Logger.Info(fmt.Sprintf("start to perform image push work for image %d", image.ID))
-				worker, err := w.GetPushImageWorker(&image, w.baseFolder, w.Config.Threads)
-				if err != nil {
-					w.Logger.Error(fmt.Sprintf("failed to get image push worker %v", err))
-				} else {
-					err := worker.DoWork(w.Context)
-					if err != nil {
-						w.Logger.Error(fmt.Sprintf("failed to perform image push work %v", err))
+						w.Logger.Error(fmt.Sprintf("failed to perform image work %v", err))
 					}
 				}
 			}
