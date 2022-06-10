@@ -301,24 +301,24 @@ func (r *RepositoryManager) Delete(c *gin.Context) {
 
 	var err error
 	if err = c.ShouldBindQuery(&deleteImageRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"ShouldBindJSON error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"ShouldBindJSON error": err.Error(), "code": 400})
 		return
 	}
 	err = r.paraValidator.Struct(deleteImageRequest)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"paraValidator error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"paraValidator error": err.Error(), "code": 400})
 		return
 	}
 
 	image, err := r.imageStore.GetImageByChecksumAndUserID(deleteImageRequest.UserID, deleteImageRequest.Checksum)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"unable to get image": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"unable to get image": err.Error(), "code": 404})
 		return
 	}
 
 	err = r.imageStore.SoftDeleteImage(&image)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"failed to soft delete image": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"failed to soft delete image": err.Error(), "code": 500})
 		return
 	}
 	c.JSON(http.StatusOK, image)
