@@ -107,7 +107,7 @@ func (i *ImageStorage) GetImageForPush(limit int) ([]models.Image, error) {
 
 func (i *ImageStorage) GetImageForClean(limit int) ([]models.Image, error) {
 	var images []models.Image
-	result := i.db.WithContext(i.context).Where("deleted = ? OR status = ?", true, models.ImagePushed).Order("create_time desc").Limit(limit).Find(&images)
+	result := i.db.WithContext(i.context).Where("deleted = ?", true).Order("create_time desc").Limit(limit).Find(&images)
 	return images, result.Error
 }
 
