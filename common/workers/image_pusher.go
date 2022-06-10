@@ -152,8 +152,7 @@ func (r *ImagePusher) createFolderIfNeeded(name string) error {
 	return nil
 }
 
-func (r *ImagePusher) Close() error {
-	return nil
+func (r *ImagePusher) Close() {
 }
 
 func (r *ImagePusher) objectExists(path string) (bool, error) {

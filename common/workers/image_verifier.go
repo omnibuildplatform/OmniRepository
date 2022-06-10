@@ -129,6 +129,5 @@ func (r *ImageVerifier) generateChecksumFile(checksum string) error {
 	return nil
 }
 
-func (r *ImageVerifier) Close() error {
-	return nil
+func (r *ImageVerifier) Close() {
 }

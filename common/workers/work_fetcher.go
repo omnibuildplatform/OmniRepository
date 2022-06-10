@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/omnibuildplatform/omni-repository/common/models"
 	"github.com/omnibuildplatform/omni-repository/common/storage"
 	"go.uber.org/zap"
 	"sync"
@@ -13,20 +12,16 @@ import (
 var fetchDownloading sync.Once
 
 type WorkFetcher struct {
-	ImageStore    *storage.ImageStorage
-	Logger        *zap.Logger
-	PullChannel   chan models.Image
-	VerifyChannel chan models.Image
-	PushChannel   chan models.Image
+	ImageStore  *storage.ImageStorage
+	Logger      *zap.Logger
+	WorkChannel chan ImageWork
 }
 
-func NewWorkFetcher(imageStore *storage.ImageStorage, logger *zap.Logger, pullCh, verifyCh, pushCh chan models.Image) (*WorkFetcher, error) {
+func NewWorkFetcher(imageStore *storage.ImageStorage, logger *zap.Logger, workCh chan ImageWork) (*WorkFetcher, error) {
 	return &WorkFetcher{
-		ImageStore:    imageStore,
-		Logger:        logger,
-		PullChannel:   pullCh,
-		VerifyChannel: verifyCh,
-		PushChannel:   pushCh,
+		ImageStore:  imageStore,
+		Logger:      logger,
+		WorkChannel: workCh,
 	}, nil
 }
 
@@ -43,7 +38,10 @@ func (r *WorkFetcher) DoWork(ctx context.Context) error {
 		if len(images) != 0 {
 			r.Logger.Info(fmt.Sprintf("found %d unfinished downloading images for download", len(images)))
 			for _, image := range images {
-				r.PullChannel <- image
+				r.WorkChannel <- ImageWork{
+					Image: image,
+					Type:  PullImageWork,
+				}
 			}
 		}
 		r.Logger.Info("==========initialize work: fetch pushing work==========")
@@ -55,7 +53,10 @@ func (r *WorkFetcher) DoWork(ctx context.Context) error {
 		if len(images) != 0 {
 			r.Logger.Info(fmt.Sprintf("found %d unfinished pushing images for download", len(images)))
 			for _, image := range images {
-				r.PushChannel <- image
+				r.WorkChannel <- ImageWork{
+					Image: image,
+					Type:  PushImageWork,
+				}
 			}
 		}
 	})
@@ -70,7 +71,10 @@ func (r *WorkFetcher) DoWork(ctx context.Context) error {
 	if len(images) != 0 {
 		r.Logger.Info(fmt.Sprintf("found %d images for download", len(images)))
 		for _, image := range images {
-			r.PullChannel <- image
+			r.WorkChannel <- ImageWork{
+				Image: image,
+				Type:  PullImageWork,
+			}
 		}
 	}
 	//3. fetch image which are not verified
@@ -81,7 +85,10 @@ func (r *WorkFetcher) DoWork(ctx context.Context) error {
 	if len(images) != 0 {
 		r.Logger.Info(fmt.Sprintf("found %d images for verify", len(images)))
 		for _, image := range images {
-			r.VerifyChannel <- image
+			r.WorkChannel <- ImageWork{
+				Image: image,
+				Type:  SignImageWork,
+			}
 		}
 	}
 
@@ -93,7 +100,25 @@ func (r *WorkFetcher) DoWork(ctx context.Context) error {
 	if len(images) != 0 {
 		r.Logger.Info(fmt.Sprintf("found %d images for push", len(images)))
 		for _, image := range images {
-			r.PushChannel <- image
+			r.WorkChannel <- ImageWork{
+				Image: image,
+				Type:  PushImageWork,
+			}
+		}
+	}
+
+	// 5. fetch image for clean
+	images, err = r.ImageStore.GetImageForClean(20)
+	if err != nil {
+		return err
+	}
+	if len(images) != 0 {
+		r.Logger.Info(fmt.Sprintf("found %d images for clean", len(images)))
+		for _, image := range images {
+			r.WorkChannel <- ImageWork{
+				Image: image,
+				Type:  CleanImageWork,
+			}
 		}
 	}
 	return nil

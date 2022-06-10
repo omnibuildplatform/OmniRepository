@@ -188,7 +188,7 @@ func (r *RepositoryManager) Close() {
 // @Accept json
 // @Produce json
 // @Success 200 object models.Image
-// @Router /query [post]
+// @Router /query [get]
 func (r *RepositoryManager) Query(c *gin.Context) {
 	var queryImageRequest dtos.QueryImageRequest
 	var err error
@@ -295,12 +295,12 @@ func (r *RepositoryManager) Load(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Success 200 object models.Image
-// @Router /delete [post]
+// @Router / [delete]
 func (r *RepositoryManager) Delete(c *gin.Context) {
 	var deleteImageRequest dtos.DeleteImageRequest
 
 	var err error
-	if err = c.ShouldBindJSON(&deleteImageRequest); err != nil {
+	if err = c.ShouldBindQuery(&deleteImageRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"ShouldBindJSON error": err.Error()})
 		return
 	}
@@ -312,7 +312,7 @@ func (r *RepositoryManager) Delete(c *gin.Context) {
 
 	image, err := r.imageStore.GetImageByChecksumAndUserID(deleteImageRequest.UserID, deleteImageRequest.Checksum)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"unable to get image": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"unable to get image": err.Error()})
 		return
 	}
 
