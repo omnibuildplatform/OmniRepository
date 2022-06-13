@@ -19,10 +19,10 @@ syncInterval = 30
         bucket = "omni-images-test"
         partSize = 419430400
 [persistentStore]
-host = "192.168.1.193"
+host = "127.0.0.1"
 user = "root"
-password = "rootpswd"
+password = "password"
 dbname = "omni_repository"
 port = "3306"
 [mq]
-kafka_brokers = "192.168.1.193:9092"
+kafka_brokers = ""

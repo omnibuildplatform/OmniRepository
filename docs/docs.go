@@ -141,7 +141,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dtos.ImageRequest"
+                            "$ref": "#/definitions/dtos.ImageRequestWithinFile"
                         }
                     }
                 ],
@@ -161,10 +161,12 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "algorithm",
+                "checksum",
                 "externalComponent",
                 "externalID",
                 "fileName",
                 "name",
+                "sourceUrl",
                 "userID"
             ],
             "properties": {
@@ -198,6 +200,47 @@ const docTemplate = `{
                 },
                 "sourceUrl": {
                     "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dtos.ImageRequestWithinFile": {
+            "type": "object",
+            "required": [
+                "algorithm",
+                "externalComponent",
+                "externalID",
+                "fileName",
+                "name",
+                "userID"
+            ],
+            "properties": {
+                "algorithm": {
+                    "type": "string",
+                    "enum": [
+                        "md5",
+                        "sha256"
+                    ]
+                },
+                "desc": {
+                    "type": "string"
+                },
+                "externalComponent": {
+                    "type": "string"
+                },
+                "externalID": {
+                    "type": "string"
+                },
+                "fileName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "publish": {
+                    "type": "boolean"
                 },
                 "userID": {
                     "type": "integer"

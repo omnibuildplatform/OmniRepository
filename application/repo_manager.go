@@ -80,7 +80,7 @@ func (r *RepositoryManager) Initialize() error {
 
 // Upload godoc
 // @Summary upload a image
-// @Param body body dtos.ImageRequest true "body for upload a image"
+// @Param body body dtos.ImageRequestWithinFile true "body for upload a image"
 // @Description Upload a image with specified parameter
 // @Tags Image
 // @Accept json
@@ -89,7 +89,7 @@ func (r *RepositoryManager) Initialize() error {
 // @Router /upload [post]
 func (r *RepositoryManager) Upload(c *gin.Context) {
 
-	var imageRequest dtos.ImageRequest
+	var imageRequest dtos.ImageRequestWithinFile
 
 	err := c.MustBindWith(&imageRequest, binding.FormMultipart)
 	if err != nil {
@@ -106,7 +106,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 	}
 
 	//get image checksum content
-	checksumFile, _, err := c.Request.FormFile("checksumFile")
+	checksumFile, err := imageRequest.CheckSumFile.Open()
 	if err != nil {
 		r.Logger.Error(fmt.Sprintf("failed to get checksum file from upload request %v", err))
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "FormFile", err.Error()))
@@ -119,7 +119,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to copy image checksum content into local"})
 		return
 	}
-	image := r.imageDto.GetImageFromRequest(imageRequest)
+	image := r.imageDto.GetImageFromRequestWithinFile(imageRequest)
 	//checkSumContent in the format of: "3e7cb72d746c5385b02b7a4bf18360925145d13f06bbd41c1a137e545b651d40 filename"
 	image.Checksum = strings.Split(checkSumContent.String(), " ")[0]
 	if err := r.validCheckSum(image.Checksum, image.Algorithm); err != nil {
@@ -137,7 +137,7 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		return
 	}
 
-	srcFile, _, err := c.Request.FormFile("imageFile")
+	srcFile, err := imageRequest.ImageFile.Open()
 	if err != nil {
 		r.Logger.Error(fmt.Sprintf("failed to get image file from upload request %v", err))
 		c.JSON(http.StatusBadRequest, app.ExportData(http.StatusBadRequest, "FormFile", err.Error()))
