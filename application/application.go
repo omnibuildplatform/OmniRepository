@@ -12,6 +12,8 @@ import (
 	"github.com/omnibuildplatform/omni-repository/app"
 )
 
+const MaxBodySize = 1024 * 1024 * 1024 * 20 //20GB
+
 var publicEngine *gin.Engine
 var internalEngine *gin.Engine
 var publicHttpServer *http.Server
@@ -23,6 +25,14 @@ func PublicEngine() *gin.Engine {
 
 func InternalEngine() *gin.Engine {
 	return internalEngine
+}
+
+func MaxSizeLimitationMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var w http.ResponseWriter = c.Writer
+		c.Request.Body = http.MaxBytesReader(w, c.Request.Body, MaxBodySize)
+		c.Next()
+	}
 }
 
 func InitServer() {
@@ -41,9 +51,9 @@ func InitServer() {
 
 	internalEngine = gin.New()
 	if app.EnvName == app.EnvDev {
-		internalEngine.Use(gin.Logger(), gin.Recovery())
+		internalEngine.Use(gin.Logger(), gin.Recovery(), MaxSizeLimitationMiddleware())
 	} else {
-		internalEngine.Use(gin.Logger())
+		internalEngine.Use(gin.Logger(), MaxSizeLimitationMiddleware())
 	}
 }
 
@@ -75,8 +85,8 @@ func Run(config config.ServerConfig) {
 	internalHttpServer = &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.InternalHttpPort),
 		Handler:      InternalEngine(),
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  60 * 5 * time.Second,
+		WriteTimeout: 60 * time.Second,
 	}
 	wg.Add(1)
 	go func() {

@@ -26,6 +26,37 @@ definitions:
         type: integer
     required:
     - algorithm
+    - checksum
+    - externalComponent
+    - externalID
+    - fileName
+    - name
+    - sourceUrl
+    - userID
+    type: object
+  dtos.ImageRequestWithinFile:
+    properties:
+      algorithm:
+        enum:
+        - md5
+        - sha256
+        type: string
+      desc:
+        type: string
+      externalComponent:
+        type: string
+      externalID:
+        type: string
+      fileName:
+        type: string
+      name:
+        type: string
+      publish:
+        type: boolean
+      userID:
+        type: integer
+    required:
+    - algorithm
     - externalComponent
     - externalID
     - fileName
@@ -155,7 +186,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/dtos.ImageRequest'
+          $ref: '#/definitions/dtos.ImageRequestWithinFile'
       produces:
       - application/json
       responses:

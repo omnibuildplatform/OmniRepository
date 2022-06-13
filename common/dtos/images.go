@@ -2,6 +2,7 @@ package dtos
 
 import (
 	"fmt"
+	"mime/multipart"
 	"strings"
 	"time"
 
@@ -11,14 +12,27 @@ import (
 type ImageRequest struct {
 	Name              string `description:"name"  form:"name" json:"name" validate:"required"`
 	Desc              string `description:"desc"  form:"desc" json:"desc"`
-	Checksum          string `description:"checksum" form:"checksum" json:"checksum"`
+	Checksum          string `description:"checksum" form:"checksum" json:"checksum" validate:"required"`
 	Algorithm         string `description:"algorithm" form:"algorithm" json:"algorithm" validate:"required,oneof=md5 sha256"`
 	ExternalID        string `description:"externalID" form:"externalID" json:"externalID" validate:"required"`
-	SourceUrl         string `description:"source url of images" json:"sourceUrl" form:"sourceUrl"`
+	SourceUrl         string `description:"source url of images" json:"sourceUrl" form:"sourceUrl" validate:"required"`
 	FileName          string `description:"file name" form:"fileName" json:"fileName" validate:"required"`
 	UserId            int    `description:"user id" form:"userID" json:"userID" validate:"required"`
 	Publish           bool   `description:"publish image to third party storage" form:"publish" json:"publish"  `
 	ExternalComponent string `description:"From APP" form:"externalComponent" json:"externalComponent" validate:"required"`
+}
+
+type ImageRequestWithinFile struct {
+	Name              string                `description:"name"  form:"name" json:"name" validate:"required"`
+	Desc              string                `description:"desc"  form:"desc" json:"desc"`
+	Algorithm         string                `description:"algorithm" form:"algorithm" json:"algorithm" validate:"required,oneof=md5 sha256"`
+	ExternalID        string                `description:"externalID" form:"externalID" json:"externalID" validate:"required"`
+	FileName          string                `description:"file name" form:"fileName" json:"fileName" validate:"required"`
+	UserId            int                   `description:"user id" form:"userID" json:"userID" validate:"required"`
+	Publish           bool                  `description:"publish image to third party storage" form:"publish" json:"publish"  `
+	ExternalComponent string                `description:"From APP" form:"externalComponent" json:"externalComponent" validate:"required"`
+	CheckSumFile      *multipart.FileHeader `form:"checksumFile" binding:"required" swaggerignore:"true"`
+	ImageFile         *multipart.FileHeader `form:"imageFile" binding:"required" swaggerignore:"true"`
 }
 
 type ImageResponse struct {
@@ -59,6 +73,19 @@ func (i *ImageDTO) GetImageFromRequest(imageRequest ImageRequest) models.Image {
 		Algorithm:         imageRequest.Algorithm,
 		ExternalID:        imageRequest.ExternalID,
 		SourceUrl:         imageRequest.SourceUrl,
+		FileName:          imageRequest.FileName,
+		UserId:            imageRequest.UserId,
+		Publish:           imageRequest.Publish,
+		ExternalComponent: imageRequest.ExternalComponent,
+	}
+}
+
+func (i *ImageDTO) GetImageFromRequestWithinFile(imageRequest ImageRequestWithinFile) models.Image {
+	return models.Image{
+		Name:              imageRequest.Name,
+		Desc:              imageRequest.Desc,
+		Algorithm:         imageRequest.Algorithm,
+		ExternalID:        imageRequest.ExternalID,
 		FileName:          imageRequest.FileName,
 		UserId:            imageRequest.UserId,
 		Publish:           imageRequest.Publish,
