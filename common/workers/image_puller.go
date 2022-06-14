@@ -116,7 +116,7 @@ func (r *ImagePuller) DoWork(ctx context.Context) error {
 	totalBlocks.Add(int32(size))
 	totalBlocks.Sub(UnReachableBlock)
 	wg.Wait()
-	files, _ := ioutil.ReadDir(blockTempFolder)
+	files, err := ioutil.ReadDir(blockTempFolder)
 	if len(files) != size {
 		r.cleanup(err)
 		return err
