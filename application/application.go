@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/omnibuildplatform/omni-repository/common/config"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -78,26 +79,34 @@ func Run(config config.ServerConfig) {
 	publicHttpServer = &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.PublicHttpPort),
 		Handler:      PublicEngine(),
-		ReadTimeout:  60 * 5 * time.Second,
-		WriteTimeout: 60 * 5 * time.Second,
+		ReadTimeout:  60 * 10 * time.Second,
+		WriteTimeout: 60 * 10 * time.Second,
 	}
 
 	internalHttpServer = &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.InternalHttpPort),
 		Handler:      InternalEngine(),
-		ReadTimeout:  60 * 5 * time.Second,
-		WriteTimeout: 60 * 5 * time.Second,
+		ReadTimeout:  60 * 10 * time.Second,
+		WriteTimeout: 60 * 10 * time.Second,
 	}
 	wg.Add(1)
 	go func() {
 		app.Logger.Info(fmt.Sprintf("public server starts up with port %d", config.PublicHttpPort))
-		publicHttpServer.ListenAndServe()
+		err := publicHttpServer.ListenAndServe()
+		if err != nil {
+			app.Logger.Error(fmt.Sprintf("unable to start public http server %s", err))
+			os.Exit(1)
+		}
 		defer wg.Done()
 	}()
 	wg.Add(1)
 	go func() {
 		app.Logger.Info(fmt.Sprintf("internal server starts up with port %d", config.InternalHttpPort))
-		internalHttpServer.ListenAndServe()
+		err := internalHttpServer.ListenAndServe()
+		if err != nil {
+			app.Logger.Error(fmt.Sprintf("unable to start internal http server %s", err))
+			os.Exit(1)
+		}
 		defer wg.Done()
 	}()
 	wg.Wait()

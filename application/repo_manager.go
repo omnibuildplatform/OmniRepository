@@ -126,16 +126,6 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	image.ImagePath = path.Join(GetImageRelativeFolder(&image), image.FileName)
-	image.ChecksumPath = path.Join(GetImageRelativeFolder(&image),
-		fmt.Sprintf("%s.%ssum", image.FileName, strings.ToLower(image.Algorithm)))
-	image.Status = models.ImageDownloaded
-	err = r.imageStore.AddImage(&image)
-	if err != nil {
-		r.Logger.Error(fmt.Sprintf("failed to save data into database %v", err))
-		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to save data into database"})
-		return
-	}
 
 	srcFile, err := imageRequest.ImageFile.Open()
 	if err != nil {
@@ -167,6 +157,18 @@ func (r *RepositoryManager) Upload(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to copy image content into local"})
 		return
 	}
+	//save image when file saved
+	image.ImagePath = path.Join(GetImageRelativeFolder(&image), image.FileName)
+	image.ChecksumPath = path.Join(GetImageRelativeFolder(&image),
+		fmt.Sprintf("%s.%ssum", image.FileName, strings.ToLower(image.Algorithm)))
+	image.Status = models.ImageDownloaded
+	err = r.imageStore.AddImage(&image)
+	if err != nil {
+		r.Logger.Error(fmt.Sprintf("failed to save data into database %v", err))
+		c.JSON(http.StatusBadRequest, gin.H{"error": "failed to save data into database"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, r.imageDto.GenerateResponseFromImage(image))
 }
 
