@@ -78,15 +78,15 @@ func Run(config config.ServerConfig) {
 	publicHttpServer = &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.PublicHttpPort),
 		Handler:      PublicEngine(),
-		ReadTimeout:  60 * time.Second,
-		WriteTimeout: 60 * time.Second,
+		ReadTimeout:  60 * 5 * time.Second,
+		WriteTimeout: 60 * 5 * time.Second,
 	}
 
 	internalHttpServer = &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.InternalHttpPort),
 		Handler:      InternalEngine(),
 		ReadTimeout:  60 * 5 * time.Second,
-		WriteTimeout: 60 * time.Second,
+		WriteTimeout: 60 * 5 * time.Second,
 	}
 	wg.Add(1)
 	go func() {
