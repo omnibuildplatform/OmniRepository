@@ -13,7 +13,7 @@ ARG user=app
 ARG group=app
 ARG home=/app
 RUN addgroup -S ${group} && adduser -S ${user} -G ${group} -h ${home}
-RUN apk update --no-cache && apk add --no-cache coreutils=8.32-r2
+RUN apk update --no-cache && apk add --no-cache coreutils=8.32-r2 curl
 
 USER ${user}
 WORKDIR ${home}
