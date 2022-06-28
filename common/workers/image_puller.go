@@ -11,7 +11,9 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -148,6 +150,7 @@ func (r *ImagePuller) ConstructImageFile() error {
 		return err
 	}
 	defer out.Close()
+	var partPaths []string
 	err = filepath.Walk(path.Join(r.LocalFolder, TempFolder), func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -155,19 +158,30 @@ func (r *ImagePuller) ConstructImageFile() error {
 		if !info.Mode().IsRegular() {
 			return nil
 		}
-		f, err := os.OpenFile(path, os.O_RDONLY, 0644)
-		if err != nil {
-			return err
-		}
-		defer f.Close()
-		n, err := io.Copy(out, f)
-		if err != nil {
-			return err
-		}
-		r.Logger.Info(fmt.Sprintf("write %d bytes to file %s", n, imagePath))
+		//collect all files
+		partPaths = append(partPaths, path)
 		return nil
 	})
-
+	//path are started with index, we sort file before appending
+	sort.Strings(partPaths)
+	for _, p := range partPaths {
+		handleError := func(temp string) error {
+			f, err := os.OpenFile(temp, os.O_RDONLY, 0644)
+			if err != nil {
+				return err
+			}
+			defer f.Close()
+			n, err := io.Copy(out, f)
+			if err != nil {
+				return err
+			}
+			r.Logger.Info(fmt.Sprintf("write %d bytes from %s to file %s", n, path.Base(temp), imagePath))
+			return nil
+		}(p)
+		if err != nil {
+			return handleError
+		}
+	}
 	return err
 }
 
@@ -276,7 +290,12 @@ func (r *ImagePuller) startWorkerLoop(ctx context.Context, wg *sync.WaitGroup, t
 }
 
 func (r *ImagePuller) fetchSingleBlock(ctx context.Context, block SingleBlock) error {
-	fileName := path.Join(r.LocalFolder, TempFolder, fmt.Sprintf("%d-%d", block.StartIndex, block.EndIndex))
+	//little hardcode here
+	fileIndex, err := strconv.Atoi(strings.Split(block.Index, "/")[0])
+	if err != nil {
+		return errors.New(fmt.Sprintf("failed to get file index information from index attribute %s", block.Index))
+	}
+	fileName := path.Join(r.LocalFolder, TempFolder, fmt.Sprintf("%s-%d-%d", fmt.Sprintf("%06d", fileIndex), block.StartIndex, block.EndIndex))
 	if fileInfo, err := os.Stat(fileName); err == nil {
 		if fileInfo.Size() == block.EndIndex-block.StartIndex+1 {
 			r.Logger.Info(fmt.Sprintf("block %s [%d, %d] for image %s already exists, skip downloading",
